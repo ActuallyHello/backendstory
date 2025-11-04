@@ -1,0 +1,27 @@
+app:
+  deployment: "local"
+  log-level: "info"
+  database:
+    host: ${MYSQL_HOST:localhost}
+    port: ${MYSQL_PORT:3306}
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
+    database: ${MYSQL_DATABASE}
+    connection:
+      max-open: 25
+      max-idle: 10
+      max-life-time: 5m
+      max-idle-time: 2m
+  server:
+    addr: ${SERVER_PORT::8080}
+    timeout:
+      idle: ${SERVER_TIMEOUT_IDLE:30s}
+      read: ${SERVER_TIMEOUT_READ:5s}
+      write: ${SERVER_TIMEOUT_WRITE:10s}
+  keycloak:
+    host: http://${KEYCLOAK_HOSTNAME}:${KEYCLOAK_PORT}
+    realm: ${KEYCLOAK_REALM}
+    client-id: ${KEYCLOAK_CLIENT_ID}
+    client-secret: ${KEYCLOAK_CLIENT_SECRET}
+    redirect-url: ${KEYCLOAK_REDIREST_URL}
+  

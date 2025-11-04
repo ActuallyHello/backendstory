@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  backendstory-app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: backendstory-app
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - MYSQL_HOST=backendstory-mysql
+      - MYSQL_PORT=3306
+      - KEYCLOAK_HOSTNAME=backendstory-keycloak
+      - KEYCLOAK_PORT=8080  # на 8080 для внутренней связи
+    ports:
+      - "${SERVER_PORT:-8080}:8080"
+    depends_on:
+      backendstory-mysql:
+        condition: service_healthy
+      backendstory-keycloak:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  backendstory-mysql:
+    image: mysql:8.0
+    container_name: backendstory-mysql
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "${MYSQL_PORT}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./migrations/init/init.sql:/docker-entrypoint-initdb.d/init.sql
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+  
+  backendstory-keycloak:
+    image: quay.io/keycloak/keycloak:22.0.0
+    container_name: backendstory-keycloak
+    env_file:
+      - .env
+    environment:
+      # Keycloak Admin
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      
+      # Database Configuration
+      KC_DB: mysql
+      KC_DB_URL_HOST: backendstory-mysql  # имя сервиса MySQL
+      KC_DB_URL_PORT: ${MYSQL_PORT:-3306}
+      KC_DB_URL_DATABASE: ${KEYCLOAK_DB_NAME}  # отдельная база для Keycloak
+      KC_DB_USERNAME: ${KEYCLOAK_DB_USER}
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+      
+      # Other Keycloak settings
+      KC_HTTP_ENABLED: true
+      KC_HEALTH_ENABLED: true
+      KC_HOSTNAME: ${KEYCLOAK_HOSTNAME:-localhost}
+      KC_HOSTNAME_STRICT: false
+    ports:
+      - "${KEYCLOAK_PORT:-8090}:8080"
+    command: start-dev
+    depends_on:
+      backendstory-mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080;echo -e \"GET /health/ready HTTP/1.1\r\nhost: http://localhost\r\nConnection: close\r\n\r\n\" >&3;grep \"HTTP/1.1 200 OK\" <&3"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mysql_data:
