@@ -23,8 +23,6 @@ func SetupRouter(container *container.AppContainer) http.Handler {
 	r := chi.NewRouter()
 
 	// TODO:
-	//  1. User handler
-	//  2. swagger on start
 	//  3. unless-stop -> 3 retry
 
 	r.Use(middleware.Logger)
@@ -35,11 +33,10 @@ func SetupRouter(container *container.AppContainer) http.Handler {
 		r.Post(register, container.GetAuthHandler().Register)
 		r.Post(login, container.GetAuthHandler().Login)
 
+		registerAuthRoutes(r, container.GetAuthService(), container.GetAuthHandler())
 		registerEnumRoutes(r, container.GetAuthService(), container.GetEnumHandler())
 		registerEnumValuesRoutes(r, container.GetAuthService(), container.GetEnumValueHandler())
 		registerPersonRoutes(r, container.GetAuthService(), container.GetPersonHandler())
-		registerRoleRoutes(r, container.GetAuthService(), container.GetRoleHandler())
-		// registerUserRoutes(r, roleUserHandler)
 	})
 
 	r.Get("/swagger/doc.json", func(w http.ResponseWriter, r *http.Request) {
@@ -64,12 +61,12 @@ func registerEnumRoutes(r chi.Router, authService auth.AuthService, enumHandler 
 	r.Route("/enumerations", func(r chi.Router) {
 		r.Use(appMiddleware.AuthMiddleware(authService, "admin"))
 
-		r.Post("/", enumHandler.Create)
-		r.Delete(byId, enumHandler.Delete)
-
 		r.Get("/", enumHandler.GetAll)
 		r.Get(byId, enumHandler.GetById)
 		r.Get("/code/{code}", enumHandler.GetByCode)
+
+		r.Post("/", enumHandler.Create)
+		r.Delete(byId, enumHandler.Delete)
 	})
 }
 
@@ -77,12 +74,12 @@ func registerEnumValuesRoutes(r chi.Router, authService auth.AuthService, enumVa
 	r.Route("/enumeration-values", func(r chi.Router) {
 		r.Use(appMiddleware.AuthMiddleware(authService, "admin"))
 
-		r.Post("/", enumValueHandler.Create)
-		r.Delete(byId, enumValueHandler.Delete)
-
 		r.Get("/", enumValueHandler.GetAll)
 		r.Get(byId, enumValueHandler.GetById)
 		r.Get("/enumeration/{enumeration_id}", enumValueHandler.GetByEnumId)
+
+		r.Post("/", enumValueHandler.Create)
+		r.Delete(byId, enumValueHandler.Delete)
 	})
 }
 
@@ -90,40 +87,24 @@ func registerPersonRoutes(r chi.Router, authService auth.AuthService, personHand
 	r.Route("/persons", func(r chi.Router) {
 		r.Use(appMiddleware.AuthMiddleware(authService, "admin"))
 
-		r.Post("/", personHandler.Create)
-		r.Delete(byId, personHandler.Delete)
-
 		r.Get("/", personHandler.GetAll)
 		r.Get(byId, personHandler.GetById)
 		r.Get("/user/{user_login}", personHandler.GetByUserLogin)
+
+		r.Post("/", personHandler.Create)
+		r.Delete(byId, personHandler.Delete)
 	})
 }
 
-func registerRoleRoutes(r chi.Router, authService auth.AuthService, roleHandler *handlers.RoleHandler) {
-	r.Route("/roles", func(r chi.Router) {
-		r.Use(appMiddleware.AuthMiddleware(authService, "admin"))
+func registerAuthRoutes(r chi.Router, authService auth.AuthService, authHandler *handlers.AuthHandler) {
+	r.Route("/auth", func(r chi.Router) {
+		r.Use(appMiddleware.AuthMiddleware(authService, "admin", "guest"))
 
-		r.Post("/", roleHandler.Create)
-		r.Delete(byId, roleHandler.Delete)
-
-		r.Get("/", roleHandler.GetAll)
-		r.Get(byId, roleHandler.GetById)
-		r.Get("/code/{code}", roleHandler.GetByCode)
+		r.Get("/users", authHandler.GetUsers)
+		r.Get("/roles", authHandler.GetRoles)
+		r.Get("/users/{username}/roles", authHandler.GetUserRoles)
 	})
 }
-
-// func registerUserRoutes(r chi.Router, authService auth.AuthService, roleUserHandler *handlers.RoleUserHandler) {
-// 	r.Route("/user-roles", func(r chi.Router) {
-// 		r.Use(appMiddleware.AuthMiddleware(authService, "admin"))
-
-// 		r.Post("/", roleUserHandler.Create)
-// 		r.Delete("/{id}", roleUserHandler.Delete)
-
-// 		r.Get("/role/{role_id}", roleUserHandler.GetByRoleID)
-// 		r.Get("/role/{roleID}/user/{userID}", roleUserHandler.GetByRoleIDAndUserID)
-// 		r.Get("/user/{user_id}", roleUserHandler.GetByUserID)
-// 	})
-// }
 
 func RegisterSwaggerRoutes(router chi.Router) {
 	// Настройка Swagger
