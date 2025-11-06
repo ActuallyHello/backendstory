@@ -26,20 +26,17 @@ type AppContainer struct {
 	enumRepo      repositories.EnumRepository
 	enumValueRepo repositories.EnumValueRepository
 	personRepo    repositories.PersonRepository
-	roleRepo      repositories.RoleRepository
 
 	// services
 	enumService      services.EnumService
 	enumValueService services.EnumValueService
 	personService    services.PersonService
-	roleService      services.RoleService
 
 	// handlers
 	authHandler      *handlers.AuthHandler
 	enumHandler      *handlers.EnumHandler
 	enumValueHandler *handlers.EnumValueHandler
 	personHandler    *handlers.PersonHandler
-	roleHandler      *handlers.RoleHandler
 
 	// auth
 	authService auth.AuthService
@@ -61,13 +58,11 @@ func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
 	enumRepo := repositories.NewEnumRepository(db)
 	enumValueRepo := repositories.NewEnumValueRepository(db)
 	personRepo := repositories.NewPersonRepository(db)
-	roleRepo := repositories.NewRoleRepository(db)
 
 	// services
 	enumService := services.NewEnumService(enumRepo)
 	enumValueService := services.NewEnumValueService(enumValueRepo)
 	personService := services.NewPersonService(personRepo)
-	roleService := services.NewRoleService(roleRepo)
 
 	// auth
 	keycloakService, err := auth.NewKeycloakService(appConfig.KeycloakConfig)
@@ -80,7 +75,6 @@ func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
 	enumHandler := handlers.NewEnumHandler(enumService)
 	enumValueHandler := handlers.NewEnumValuenHandler(enumValueService)
 	personHandler := handlers.NewPersonHandler(personService)
-	roleHandler := handlers.NewRoleHandler(roleService)
 	authHandler := handlers.NewAuthHandler(keycloakService)
 
 	return &AppContainer{
@@ -94,20 +88,17 @@ func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
 		enumRepo:      enumRepo,
 		enumValueRepo: enumValueRepo,
 		personRepo:    personRepo,
-		roleRepo:      roleRepo,
 
 		// services
 		enumService:      enumService,
 		enumValueService: enumValueService,
 		personService:    personService,
-		roleService:      roleService,
 
 		// handlers
 		authHandler:      authHandler,
 		enumHandler:      enumHandler,
 		enumValueHandler: enumValueHandler,
 		personHandler:    personHandler,
-		roleHandler:      roleHandler,
 
 		// auth
 		authService: keycloakService,
@@ -147,10 +138,6 @@ func (c *AppContainer) GetPersonRepository() repositories.PersonRepository {
 	return c.personRepo
 }
 
-func (c *AppContainer) GetRoleRepository() repositories.RoleRepository {
-	return c.roleRepo
-}
-
 // Services
 func (c *AppContainer) GetEnumService() services.EnumService {
 	return c.enumService
@@ -162,10 +149,6 @@ func (c *AppContainer) GetEnumValueService() services.EnumValueService {
 
 func (c *AppContainer) GetPersonService() services.PersonService {
 	return c.personService
-}
-
-func (c *AppContainer) GetRoleService() services.RoleService {
-	return c.roleService
 }
 
 // Handlers
@@ -183,10 +166,6 @@ func (c *AppContainer) GetEnumValueHandler() *handlers.EnumValueHandler {
 
 func (c *AppContainer) GetPersonHandler() *handlers.PersonHandler {
 	return c.personHandler
-}
-
-func (c *AppContainer) GetRoleHandler() *handlers.RoleHandler {
-	return c.roleHandler
 }
 
 // Auth
