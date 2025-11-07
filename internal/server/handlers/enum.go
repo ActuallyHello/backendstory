@@ -125,7 +125,7 @@ func (h *EnumHandler) GetById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	enum, err := h.enumerationService.GetById(ctx, uint(id))
+	enum, err := h.enumerationService.GetByID(ctx, uint(id))
 	if err != nil {
 		middleware.HandleError(w, r, err)
 		return
@@ -163,6 +163,45 @@ func (h *EnumHandler) GetByCode(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(h.toEnumDTO(enum))
+}
+
+// GetAll возвращает перечисления
+// @Summary Получить перечисления
+// @Description Возвращает перечисление по его идентификатору
+// @Tags enumerations
+// @Produce json
+// @Success 200 {object} dto.EnumDTO "Найденные перечисление"
+// @Failure 400 {object} dto.ErrorResponse "Неверный формат"
+// @Failure 404 {object} dto.ErrorResponse "Перечисление не найдено"
+// @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /enumerations [get]
+func (h *EnumHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var req dto.SearchCriteria
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		middleware.HandleError(w, r, appErr.NewTechnicalError(err, enumHandlerCode, err.Error()))
+		return
+	}
+	if err := h.validate.Struct(req); err != nil {
+		details := common.CollectValidationDetails(err)
+		middleware.HandleValidationError(w, r, appErr.NewLogicalError(err, enumHandlerCode, err.Error()), details)
+		return
+	}
+
+	enums, err := h.enumerationService.GetWithSearchCriteria(ctx, req)
+	if err != nil {
+		middleware.HandleError(w, r, err)
+		return
+	}
+
+	dtos := make([]dto.EnumDTO, 0, len(enums))
+	for _, enum := range enums {
+		dtos = append(dtos, h.toEnumDTO(enum))
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(dtos)
 }
 
 // // Update обновляет перечисление
@@ -232,7 +271,7 @@ func (h *EnumHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	enum, err := h.enumerationService.GetById(ctx, uint(id))
+	enum, err := h.enumerationService.GetByID(ctx, uint(id))
 	if err != nil {
 		middleware.HandleError(w, r, err)
 		return

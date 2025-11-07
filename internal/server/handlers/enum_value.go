@@ -124,7 +124,7 @@ func (h *EnumValueHandler) GetById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	enumValue, err := h.enumValueService.GetById(ctx, uint(id))
+	enumValue, err := h.enumValueService.GetByID(ctx, uint(id))
 	if err != nil {
 		middleware.HandleError(w, r, err)
 		return
@@ -236,7 +236,7 @@ func (h *EnumValueHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	enumValue, err := h.enumValueService.GetById(ctx, uint(id))
+	enumValue, err := h.enumValueService.GetByID(ctx, uint(id))
 	if err != nil {
 		middleware.HandleError(w, r, err)
 		return

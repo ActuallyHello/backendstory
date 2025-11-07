@@ -128,7 +128,7 @@ func (h *PersonHandler) GetById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	person, err := h.personService.GetById(ctx, uint(id))
+	person, err := h.personService.GetByID(ctx, uint(id))
 	if err != nil {
 		middleware.HandleError(w, r, err)
 		return
@@ -166,48 +166,6 @@ func (h *PersonHandler) GetByUserLogin(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(h.toPersonDTO(person))
-}
-
-// Update обновляет персону
-// @Summary Обновить персону
-// @Description Обновляет существующую персону
-// @Tags persons
-// @Accept json
-// @Produce json
-// @Param request body dto.UpdatePersonRequest true "Данные для обновления"
-// @Success 204 "Персона успешно обновлена"
-// @Failure 400 {object} dto.ErrorResponse "Ошибка валидации"
-// @Failure 404 {object} dto.ErrorResponse "Персона не найдена"
-// @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
-// @Router /persons [put]
-func (h *PersonHandler) Update(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	var req dto.UpdatePersonRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		middleware.HandleError(w, r, appErr.NewTechnicalError(err, personHandlerCode, err.Error()))
-		return
-	}
-	if err := h.validate.Struct(req); err != nil {
-		details := common.CollectValidationDetails(err)
-		middleware.HandleValidationError(w, r, appErr.NewLogicalError(err, personHandlerCode, err.Error()), details)
-		return
-	}
-
-	person := entities.Person{
-		ID:        req.ID,
-		Firstname: req.FirstName,
-		Lastname:  req.LastName,
-		Phone:     req.Phone,
-		UserLogin: req.UserLogin,
-	}
-	_, err := h.personService.Update(ctx, person)
-	if err != nil {
-		middleware.HandleError(w, r, err)
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
 }
 
 // Delete удаляет персону
@@ -248,7 +206,7 @@ func (h *PersonHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		softDelete = soft
 	}
 
-	person, err := h.personService.GetById(ctx, uint(id))
+	person, err := h.personService.GetByID(ctx, uint(id))
 	if err != nil {
 		middleware.HandleError(w, r, err)
 		return

@@ -33,9 +33,10 @@ func SetupRouter(container *container.AppContainer) http.Handler {
 		r.Post(register, container.GetAuthHandler().Register)
 		r.Post(login, container.GetAuthHandler().Login)
 
-		registerAuthRoutes(r, container.GetAuthService(), container.GetAuthHandler())
 		registerEnumRoutes(r, container.GetAuthService(), container.GetEnumHandler())
 		registerEnumValuesRoutes(r, container.GetAuthService(), container.GetEnumValueHandler())
+
+		registerAuthRoutes(r, container.GetAuthService(), container.GetAuthHandler())
 		registerPersonRoutes(r, container.GetAuthService(), container.GetPersonHandler())
 	})
 
@@ -59,11 +60,12 @@ func SetupRouter(container *container.AppContainer) http.Handler {
 func registerEnumRoutes(r chi.Router, authService auth.AuthService, enumHandler *handlers.EnumHandler) {
 	// r.Use(appMiddleware.KeycloakAuthMiddleware(kc, "admin"))
 	r.Route("/enumerations", func(r chi.Router) {
-		r.Use(appMiddleware.AuthMiddleware(authService, "admin"))
+		// r.Use(appMiddleware.AuthMiddleware(authService, "admin"))
 
 		r.Get("/", enumHandler.GetAll)
 		r.Get(byId, enumHandler.GetById)
 		r.Get("/code/{code}", enumHandler.GetByCode)
+		r.Post("/search", enumHandler.GetWithSearchCriteria)
 
 		r.Post("/", enumHandler.Create)
 		r.Delete(byId, enumHandler.Delete)
