@@ -10,67 +10,20 @@ import (
 )
 
 type EnumValueRepository interface {
-	Create(ctx context.Context, enumValue entities.EnumValue) (entities.EnumValue, error)
-	Update(ctx context.Context, enumValue entities.EnumValue) (entities.EnumValue, error)
-	Delete(ctx context.Context, enumValue entities.EnumValue) error
+	BaseRepository[entities.EnumValue]
 
-	FindAll(ctx context.Context) ([]entities.EnumValue, error)
-	FindById(ctx context.Context, id uint) (entities.EnumValue, error)
 	FindByEnumID(ctx context.Context, enumerationID uint) ([]entities.EnumValue, error)
 	FindByCodeAndEnumID(ctx context.Context, code string, enumerationID uint) (entities.EnumValue, error)
 }
 
 type enumValueRepository struct {
-	db *gorm.DB
+	BaseRepositoryImpl[entities.EnumValue]
 }
 
 func NewEnumValueRepository(db *gorm.DB) *enumValueRepository {
-	return &enumValueRepository{db: db}
-}
-
-// Create создает новую запись EnumValue
-func (r *enumValueRepository) Create(ctx context.Context, enumValue entities.EnumValue) (entities.EnumValue, error) {
-	if err := r.db.WithContext(ctx).Create(&enumValue).Error; err != nil {
-		return entities.EnumValue{}, err
+	return &enumValueRepository{
+		BaseRepositoryImpl: *NewBaseRepositoryImpl[entities.EnumValue](db),
 	}
-	return enumValue, nil
-}
-
-// Delete выполняет удаление EnumValue
-func (r *enumValueRepository) Delete(ctx context.Context, enumValue entities.EnumValue) error {
-	if err := r.db.WithContext(ctx).Delete(&enumValue).Error; err != nil {
-		return err
-	}
-	return nil
-}
-
-// Update обновляет существующую запись EnumValue
-func (r *enumValueRepository) Update(ctx context.Context, enumValue entities.EnumValue) (entities.EnumValue, error) {
-	if err := r.db.WithContext(ctx).Save(&enumValue).Error; err != nil {
-		return entities.EnumValue{}, err
-	}
-	return enumValue, nil
-}
-
-// FindAll ищет все EnumValue
-func (r *enumValueRepository) FindAll(ctx context.Context) ([]entities.EnumValue, error) {
-	var enumValues []entities.EnumValue
-	if err := r.db.WithContext(ctx).Find(&enumValues).Error; err != nil {
-		return nil, err
-	}
-	return enumValues, nil
-}
-
-// FindById ищет EnumValue по ID
-func (r *enumValueRepository) FindById(ctx context.Context, id uint) (entities.EnumValue, error) {
-	var enumValue entities.EnumValue
-	if err := r.db.WithContext(ctx).First(&enumValue, id).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return entities.EnumValue{}, common.NewNotFoundError("enum value not found by id")
-		}
-		return entities.EnumValue{}, err
-	}
-	return enumValue, nil
 }
 
 // FindByCode ищет EnumValue по коду

@@ -17,17 +17,18 @@ const (
 )
 
 type EnumValueService interface {
+	BaseService[entities.EnumValue]
+
 	Create(ctx context.Context, enumValue entities.EnumValue) (entities.EnumValue, error)
 	Update(ctx context.Context, enumValue entities.EnumValue) (entities.EnumValue, error)
 	Delete(ctx context.Context, enumValue entities.EnumValue) error
 
-	GetAll(ctx context.Context) ([]entities.EnumValue, error)
-	GetById(ctx context.Context, id uint) (entities.EnumValue, error)
 	GetByEnumID(ctx context.Context, enumerationID uint) ([]entities.EnumValue, error)
 	GetByCodeAndEnumID(ctx context.Context, code string, enumerationID uint) (entities.EnumValue, error)
 }
 
 type enumValueService struct {
+	BaseServiceImpl[entities.EnumValue]
 	enumValueRepo repositories.EnumValueRepository
 }
 
@@ -35,7 +36,8 @@ func NewEnumValueService(
 	enumValueRepo repositories.EnumValueRepository,
 ) *enumValueService {
 	return &enumValueService{
-		enumValueRepo: enumValueRepo,
+		BaseServiceImpl: *NewBaseServiceImpl(enumValueRepo),
+		enumValueRepo:   enumValueRepo,
 	}
 }
 
@@ -68,7 +70,7 @@ func (s *enumValueService) Create(ctx context.Context, enumValue entities.EnumVa
 // Update обновляет существующую EnumValue
 func (s *enumValueService) Update(ctx context.Context, enumValue entities.EnumValue) (entities.EnumValue, error) {
 	// Проверяем существование записи
-	existing, err := s.GetById(ctx, enumValue.ID)
+	existing, err := s.GetByID(ctx, enumValue.ID)
 	if err != nil {
 		return entities.EnumValue{}, err
 	}
@@ -108,29 +110,6 @@ func (s *enumValueService) Delete(ctx context.Context, enumValue entities.EnumVa
 	}
 	slog.Info("Deleted enumeration value", "code", enumValue.Code, "enumerationID", enumValue.EnumID)
 	return nil
-}
-
-// GetById ищет EnumValue по ID
-func (s *enumValueService) GetAll(ctx context.Context) ([]entities.EnumValue, error) {
-	values, err := s.enumValueRepo.FindAll(ctx)
-	if err != nil {
-		slog.Error("Failed to find enumeration values", "error", err)
-		return nil, appError.NewTechnicalError(err, enumValueServiceCode, err.Error())
-	}
-	return values, nil
-}
-
-// GetById ищет EnumValue по ID
-func (s *enumValueService) GetById(ctx context.Context, id uint) (entities.EnumValue, error) {
-	value, err := s.enumValueRepo.FindById(ctx, id)
-	if err != nil {
-		slog.Error("Failed to find enumeration value by ID", "error", err, "id", id)
-		if errors.Is(err, &common.NotFoundError{}) {
-			return entities.EnumValue{}, appError.NewLogicalError(err, enumValueServiceCode, fmt.Sprintf("enumeration value with id=%d not found!", id))
-		}
-		return entities.EnumValue{}, appError.NewTechnicalError(err, enumValueServiceCode, err.Error())
-	}
-	return value, nil
 }
 
 // GetByEnumID ищет все EnumValue по EnumID
