@@ -1,4 +1,11 @@
 .env
+
 goose.yaml
+
 docs/
+
 help.txt
+
+.vscode
+
+/cmd/test/
