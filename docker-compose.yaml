@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: backendstory-app
-    restart: unless-stopped
+    restart: on-failure:3
     env_file:
       - .env
     environment:
@@ -31,7 +31,6 @@ services:
   backendstory-mysql:
     image: mysql:8.0
     container_name: backendstory-mysql
-    restart: unless-stopped
     env_file:
       - .env
     environment:
