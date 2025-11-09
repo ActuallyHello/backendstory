@@ -9,3 +9,5 @@ help.txt
 .vscode
 
 /cmd/test/
+
+export/
