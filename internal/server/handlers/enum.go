@@ -72,7 +72,7 @@ func (h *EnumHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(h.toEnumDTO(enum))
+	json.NewEncoder(w).Encode(dto.ToEnumDTO(enum))
 }
 
 // GetAll возвращает все перечисления
@@ -98,7 +98,7 @@ func (h *EnumHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 
 	dtos := make([]dto.EnumDTO, 0, len(enums))
 	for _, enum := range enums {
-		dtos = append(dtos, h.toEnumDTO(enum))
+		dtos = append(dtos, dto.ToEnumDTO(enum))
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -141,7 +141,7 @@ func (h *EnumHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(h.toEnumDTO(enum))
+	json.NewEncoder(w).Encode(dto.ToEnumDTO(enum))
 }
 
 // GetByCode возвращает перечисление по коду
@@ -175,7 +175,7 @@ func (h *EnumHandler) GetByCode(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(h.toEnumDTO(enum))
+	json.NewEncoder(w).Encode(dto.ToEnumDTO(enum))
 }
 
 // GetWithSearchCriteria выполняет поиск перечислений по критериям
@@ -214,7 +214,7 @@ func (h *EnumHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Reque
 
 	dtos := make([]dto.EnumDTO, 0, len(enums))
 	for _, enum := range enums {
-		dtos = append(dtos, h.toEnumDTO(enum))
+		dtos = append(dtos, dto.ToEnumDTO(enum))
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -262,12 +262,4 @@ func (h *EnumHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
-}
-
-func (h *EnumHandler) toEnumDTO(enum entities.Enum) dto.EnumDTO {
-	return dto.EnumDTO{
-		ID:    enum.ID,
-		Code:  enum.Code,
-		Label: enum.Label,
-	}
 }

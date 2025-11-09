@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -66,7 +65,6 @@ func (h *EnumValueHandler) Create(w http.ResponseWriter, r *http.Request) {
 		Label:  req.Label,
 		EnumID: req.EnumID,
 	}
-	fmt.Println("SHOW ENUM VALUE", enumValue)
 	enumValue, err := h.enumValueService.Create(ctx, enumValue)
 	if err != nil {
 		middleware.HandleError(w, r, err)
@@ -74,7 +72,7 @@ func (h *EnumValueHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(h.toEnumValueDTO(enumValue))
+	json.NewEncoder(w).Encode(dto.ToEnumValueDTO(enumValue))
 }
 
 // GetAll возвращает все значения перечислений
@@ -99,7 +97,7 @@ func (h *EnumValueHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(h.toEnumValueDTOs(enumValues))
+	json.NewEncoder(w).Encode((enumValues))
 }
 
 // GetById возвращает значение перечисления по ID
@@ -138,7 +136,7 @@ func (h *EnumValueHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(h.toEnumValueDTO(enumValue))
+	json.NewEncoder(w).Encode(dto.ToEnumValueDTO(enumValue))
 }
 
 // GetByEnumId возвращает значения перечисления по ID перечисления
@@ -175,8 +173,13 @@ func (h *EnumValueHandler) GetByEnumId(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	dtos := make([]dto.EnumValueDTO, 0, len(enumValues))
+	for _, enumValue := range enumValues {
+		dtos = append(dtos, dto.ToEnumValueDTO(enumValue))
+	}
+
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(h.toEnumValueDTOs(enumValues))
+	json.NewEncoder(w).Encode(dtos)
 }
 
 // Delete удаляет значение перечисления
@@ -222,19 +225,45 @@ func (h *EnumValueHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *EnumValueHandler) toEnumValueDTO(enumValue entities.EnumValue) dto.EnumValueDTO {
-	return dto.EnumValueDTO{
-		ID:     enumValue.ID,
-		Code:   enumValue.Code,
-		Label:  enumValue.Label,
-		EnumID: enumValue.EnumID,
-	}
-}
+// GetWithSearchCriteria выполняет поиск перечислений по критериям
+// @Summary Поиск перечислений
+// @Description Выполняет поиск перечислений по заданным критериям
+// @Tags Enumerations
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body dto.SearchCriteria true "Критерии поиска"
+// @Success 200 {array} dto.EnumDTO "Список найденных перечислений"
+// @Failure 400 {object} dto.ErrorResponse "Ошибка валидации"
+// @Failure 401 {object} dto.ErrorResponse "Не авторизован"
+// @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
+// @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /enumerations/search [post]
+func (h *EnumValueHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 
-func (h *EnumValueHandler) toEnumValueDTOs(values []entities.EnumValue) []dto.EnumValueDTO {
-	dtos := make([]dto.EnumValueDTO, len(values))
-	for i := 0; i < len(values); i++ {
-		dtos[i] = h.toEnumValueDTO(values[i])
+	var req dto.SearchCriteria
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		middleware.HandleError(w, r, appErr.NewTechnicalError(err, enumHandlerCode, err.Error()))
+		return
 	}
-	return dtos
+	if err := h.validate.Struct(req); err != nil {
+		details := common.CollectValidationDetails(err)
+		middleware.HandleValidationError(w, r, appErr.NewLogicalError(err, enumHandlerCode, err.Error()), details)
+		return
+	}
+
+	enumValues, err := h.enumValueService.GetWithSearchCriteria(ctx, req)
+	if err != nil {
+		middleware.HandleError(w, r, err)
+		return
+	}
+
+	dtos := make([]dto.EnumValueDTO, 0, len(enumValues))
+	for _, enumValue := range enumValues {
+		dtos = append(dtos, dto.ToEnumValueDTO(enumValue))
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(dtos)
 }

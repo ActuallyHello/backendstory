@@ -74,7 +74,7 @@ func (h *PersonHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(h.toPersonDTO(person))
+	json.NewEncoder(w).Encode(dto.ToPersonDTO(person))
 }
 
 // GetAll возвращает всех персон
@@ -100,7 +100,7 @@ func (h *PersonHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 
 	dtos := make([]dto.PersonDTO, 0, len(persons))
 	for _, person := range persons {
-		dtos = append(dtos, h.toPersonDTO(person))
+		dtos = append(dtos, dto.ToPersonDTO(person))
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -143,7 +143,7 @@ func (h *PersonHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(h.toPersonDTO(person))
+	json.NewEncoder(w).Encode(dto.ToPersonDTO(person))
 }
 
 // GetByUserLogin возвращает персону по логину пользователя
@@ -177,7 +177,7 @@ func (h *PersonHandler) GetByUserLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(h.toPersonDTO(person))
+	json.NewEncoder(w).Encode(dto.ToPersonDTO(person))
 }
 
 // Delete удаляет персону
@@ -236,15 +236,45 @@ func (h *PersonHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *PersonHandler) toPersonDTO(person entities.Person) dto.PersonDTO {
-	return dto.PersonDTO{
-		ID:        person.ID,
-		CreatedAt: person.CreatedAt,
-		UpdatedAt: person.UpdatedAt,
+// GetWithSearchCriteria выполняет поиск людей по критериям
+// @Summary Поиск людей
+// @Description Выполняет поиск людей по заданным критериям
+// @Tags Persons
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body dto.SearchCriteria true "Критерии поиска"
+// @Success 200 {array} dto.PersonDTO "Список найденных людей"
+// @Failure 400 {object} dto.ErrorResponse "Ошибка валидации"
+// @Failure 401 {object} dto.ErrorResponse "Не авторизован"
+// @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
+// @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /persons/search [post]
+func (h *PersonHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 
-		Firstname: person.Firstname,
-		Lastname:  person.Lastname,
-		Phone:     person.Phone,
-		UserLogin: person.UserLogin,
+	var req dto.SearchCriteria
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		middleware.HandleError(w, r, appErr.NewTechnicalError(err, enumHandlerCode, err.Error()))
+		return
 	}
+	if err := h.validate.Struct(req); err != nil {
+		details := common.CollectValidationDetails(err)
+		middleware.HandleValidationError(w, r, appErr.NewLogicalError(err, enumHandlerCode, err.Error()), details)
+		return
+	}
+
+	persons, err := h.personService.GetWithSearchCriteria(ctx, req)
+	if err != nil {
+		middleware.HandleError(w, r, err)
+		return
+	}
+
+	dtos := make([]dto.PersonDTO, 0, len(persons))
+	for _, person := range persons {
+		dtos = append(dtos, dto.ToPersonDTO(person))
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(dtos)
 }
