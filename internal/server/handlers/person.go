@@ -255,12 +255,12 @@ func (h *PersonHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Req
 
 	var req dto.SearchCriteria
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		middleware.HandleError(w, r, appErr.NewTechnicalError(err, enumHandlerCode, err.Error()))
+		middleware.HandleError(w, r, appErr.NewTechnicalError(err, personHandlerCode, err.Error()))
 		return
 	}
 	if err := h.validate.Struct(req); err != nil {
 		details := common.CollectValidationDetails(err)
-		middleware.HandleValidationError(w, r, appErr.NewLogicalError(err, enumHandlerCode, err.Error()), details)
+		middleware.HandleValidationError(w, r, appErr.NewLogicalError(err, personHandlerCode, err.Error()), details)
 		return
 	}
 

@@ -234,7 +234,7 @@ func (h *AuthHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Security BearerAuth
 // @Param username path string true "Имя пользователя"
-// @Success 200 {array} dto.UserDTO "Пользователь"
+// @Success 200 {object} dto.UserDTO "Пользователь"
 // @Failure 400 {object} dto.ErrorResponse "Неверное имя пользователя"
 // @Failure 401 {object} dto.ErrorResponse "Не авторизован"
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
@@ -260,18 +260,17 @@ func (h *AuthHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(userDTO)
 }
 
-// GetTokenInfo возвращает информацию из текущего токена
+// GetHeaderTokenInfo возвращает информацию из текущего токена
 // @Summary Получить информацию из текущего токена
 // @Description Возвращает информацию из текущего токена
 // @Tags Authentication
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Success 200 {array} dto.TokenInfoDTO "Токен DTO"
-// @Failure 400 {object} dto.ErrorResponse "Неверное формат запроса"
+// @Success 200 {object} dto.TokenUserInfo "Информация о пользователе из токена"
+// @Failure 400 {object} dto.ErrorResponse "Неверный формат запроса"
 // @Failure 401 {object} dto.ErrorResponse "Не авторизован"
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} dto.ErrorResponse "Пользователь не найден"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /auth/token [get]
 func (h *AuthHandler) GetHeaderTokenInfo(w http.ResponseWriter, r *http.Request) {
@@ -294,26 +293,24 @@ func (h *AuthHandler) GetHeaderTokenInfo(w http.ResponseWriter, r *http.Request)
 	json.NewEncoder(w).Encode(tokenUserInfo)
 }
 
-// GetTokenInfo возвращает информацию из токена
+// GetBodyTokenInfo возвращает информацию из токена
 // @Summary Получить информацию из токена
 // @Description Возвращает информацию из токена
 // @Tags Authentication
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Success 200 {array} dto.TokenInfoDTO "Токен DTO"
-// @Failure 400 {object} dto.ErrorResponse "Неверное формат запроса"
+// @Param request body dto.TokenRequest true "Токен для проверки"
+// @Success 200 {object} dto.TokenUserInfo "Информация о пользователе из токена"
+// @Failure 400 {object} dto.ErrorResponse "Неверный формат запроса"
 // @Failure 401 {object} dto.ErrorResponse "Не авторизован"
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} dto.ErrorResponse "Пользователь не найден"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /auth/token [post]
 func (h *AuthHandler) GetBodyTokenInfo(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	tokenReq := struct {
-		Token string `json:"token" validate:"required"`
-	}{}
+	var tokenReq dto.TokenRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&tokenReq); err != nil {
 		middleware.HandleError(w, r, appErr.NewValidationError(err, authHandlerCode, err.Error()))

@@ -2,6 +2,8 @@ package dto
 
 import "time"
 
+// RegisterUserRequest represents request for user registration
+// @Name RegisterUserRequest
 type RegisterUserRequest struct {
 	Username        string `json:"username" validate:"required"`
 	Email           string `json:"email" validate:"required,email"`
@@ -9,11 +11,15 @@ type RegisterUserRequest struct {
 	ConfirmPassword string `json:"confirm_password" validate:"required,eqfield=Password"`
 }
 
+// LoginRequest represents request for user login
+// @Name LoginRequest
 type LoginRequest struct {
 	Login    string `json:"login" validate:"required"` // could be username or email
 	Password string `json:"password" validate:"required"`
 }
 
+// UserDTO represents user data transfer object
+// @Name UserDTO
 type UserDTO struct {
 	ID        string    `json:"id"`
 	Email     string    `json:"email"`
@@ -21,6 +27,8 @@ type UserDTO struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+// JWT represents JWT tokens response
+// @Name JWT
 type JWT struct {
 	AccessToken      string `json:"access_token"`
 	ExpiresIn        int    `json:"expires_in"`
@@ -28,8 +36,16 @@ type JWT struct {
 	RefreshToken     string `json:"refresh_token"`
 }
 
+// TokenUserInfo represents user information from token
+// @Name TokenUserInfo
 type TokenUserInfo struct {
 	Username string   `json:"username"`
 	Email    string   `json:"email"`
 	Roles    []string `json:"roles"`
+}
+
+// TokenRequest represents token verification request
+// @Name TokenRequest
+type TokenRequest struct {
+	Token string `json:"token" validate:"required"`
 }

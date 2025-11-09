@@ -22,19 +22,28 @@ const (
 	deploymentProd  = "prod"
 )
 
-// @title BackendStory Enumeration API
+// @title BackendStory API
 // @version 1.0
-// @description REST API для управления перечислениями и их значениями
+// @description API для управления перечислениями, пользователями и аутентификацией
+// @termsOfService http://swagger.io/terms/
 
 // @contact.name API Support
-// @contact.email support@backendstory.com
+// @contact.url http://www.swagger.io/support
+// @contact.email support@swagger.io
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
 
 // @host localhost:8080
 // @BasePath /api/v1
+// @schemes http https
 
 // @securityDefinitions.apikey BearerAuth
 // @in header
 // @name Authorization
+// @description Type "Bearer" followed by a space and JWT token.
+
+// @x-extension-openapi {"example": "value"}
 func main() {
 	slog.Info("Loading backendstory application...!!!!")
 

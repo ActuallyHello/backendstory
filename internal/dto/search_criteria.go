@@ -1,5 +1,7 @@
 package dto
 
+// Operator represents comparison operators for search conditions
+// @Name Operator
 type Operator string
 
 const (
@@ -13,6 +15,8 @@ const (
 	OpLike      Operator = "like"
 )
 
+// SearchCriteria represents search criteria with pagination and filtering
+// @Name SearchCriteria
 type SearchCriteria struct {
 	Limit            int               `json:"limit" validate:"required,gte=0"`
 	Offset           *int              `json:"offset" validate:"omitempty,gte=0"`
@@ -20,6 +24,8 @@ type SearchCriteria struct {
 	SearchConditions []SearchCondition `json:"search_conditions"`
 }
 
+// SearchCondition represents a single search condition
+// @Name SearchCondition
 type SearchCondition struct {
 	Field     string   `json:"field" validate:"required"`
 	Operation Operator `json:"operation" validate:"required"`

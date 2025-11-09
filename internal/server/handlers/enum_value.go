@@ -23,7 +23,7 @@ type EnumValueHandler struct {
 	enumValueService services.EnumValueService
 }
 
-func NewEnumValuenHandler(
+func NewEnumValueHandler(
 	enumValueService services.EnumValueService,
 ) *EnumValueHandler {
 	return &EnumValueHandler{
@@ -96,8 +96,13 @@ func (h *EnumValueHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	dtos := make([]dto.EnumValueDTO, 0, len(enumValues))
+	for _, enumValue := range enumValues {
+		dtos = append(dtos, dto.ToEnumValueDTO(enumValue))
+	}
+
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode((enumValues))
+	json.NewEncoder(w).Encode(dtos)
 }
 
 // GetById возвращает значение перечисления по ID
@@ -225,31 +230,31 @@ func (h *EnumValueHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// GetWithSearchCriteria выполняет поиск перечислений по критериям
-// @Summary Поиск перечислений
-// @Description Выполняет поиск перечислений по заданным критериям
-// @Tags Enumerations
+// GetWithSearchCriteria выполняет поиск значений перечислений по критериям
+// @Summary Поиск значений перечислений
+// @Description Выполняет поиск значений перечислений по заданным критериям
+// @Tags Enumeration Values
 // @Accept json
 // @Produce json
 // @Security BearerAuth
 // @Param request body dto.SearchCriteria true "Критерии поиска"
-// @Success 200 {array} dto.EnumDTO "Список найденных перечислений"
+// @Success 200 {array} dto.EnumValueDTO "Список найденных значений перечислений"
 // @Failure 400 {object} dto.ErrorResponse "Ошибка валидации"
 // @Failure 401 {object} dto.ErrorResponse "Не авторизован"
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
-// @Router /enumerations/search [post]
+// @Router /enumeration-values/search [post]
 func (h *EnumValueHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var req dto.SearchCriteria
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		middleware.HandleError(w, r, appErr.NewTechnicalError(err, enumHandlerCode, err.Error()))
+		middleware.HandleError(w, r, appErr.NewTechnicalError(err, enumValueHandlerCode, err.Error()))
 		return
 	}
 	if err := h.validate.Struct(req); err != nil {
 		details := common.CollectValidationDetails(err)
-		middleware.HandleValidationError(w, r, appErr.NewLogicalError(err, enumHandlerCode, err.Error()), details)
+		middleware.HandleValidationError(w, r, appErr.NewLogicalError(err, enumValueHandlerCode, err.Error()), details)
 		return
 	}
 

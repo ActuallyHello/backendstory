@@ -4,18 +4,24 @@ import (
 	"github.com/ActuallyHello/backendstory/internal/store/entities"
 )
 
+// EnumValueCreateRequest represents request for creating enum value
+// @Name EnumValueCreateRequest
 type EnumValueCreateRequest struct {
 	Code   string `json:"code" validate:"required,min=1,max=50"`
 	Label  string `json:"label" validate:"required,min=1,max=255"`
 	EnumID uint   `json:"enumeration_id" validate:"required,gt=0"`
 }
 
+// EnumValueUpdateRequest represents request for updating enum value
+// @Name EnumValueUpdateRequest
 type EnumValueUpdateRequest struct {
 	ID    uint   `json:"id" validate:"required"`
 	Code  string `json:"code" validate:"omitempty,min=1,max=50"`
 	Label string `json:"label" validate:"omitempty,min=1,max=255"`
 }
 
+// EnumValueDTO represents enum value data transfer object
+// @Name EnumValueDTO
 type EnumValueDTO struct {
 	ID     uint   `json:"id"`
 	Code   string `json:"code"`

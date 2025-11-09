@@ -73,7 +73,7 @@ func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
 
 	// handlers
 	enumHandler := handlers.NewEnumHandler(enumService)
-	enumValueHandler := handlers.NewEnumValuenHandler(enumValueService)
+	enumValueHandler := handlers.NewEnumValueHandler(enumValueService)
 	personHandler := handlers.NewPersonHandler(personService)
 	authHandler := handlers.NewAuthHandler(keycloakService)
 
