@@ -60,7 +60,7 @@ func SetupRouter(container *container.AppContainer) http.Handler {
 func registerEnumRoutes(r chi.Router, authService auth.AuthService, enumHandler *handlers.EnumHandler) {
 	// r.Use(appMiddleware.KeycloakAuthMiddleware(kc, "admin"))
 	r.Route("/enumerations", func(r chi.Router) {
-		// r.Use(appMiddleware.AuthMiddleware(authService, "admin"))
+		r.Use(appMiddleware.AuthMiddleware(authService, "admin"))
 
 		r.Get("/", enumHandler.GetAll)
 		r.Get(byId, enumHandler.GetById)

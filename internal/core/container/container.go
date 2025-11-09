@@ -65,7 +65,7 @@ func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
 	personService := services.NewPersonService(personRepo)
 
 	// auth
-	keycloakService, err := auth.NewKeycloakService(appConfig.KeycloakConfig)
+	keycloakService, err := auth.NewKeycloakService(ctx, appConfig.KeycloakConfig)
 	if err != nil {
 		slog.Error("Error while creating keycloak connection", "err", err)
 		log.Fatal(err)

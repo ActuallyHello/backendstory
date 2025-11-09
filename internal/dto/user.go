@@ -10,11 +10,12 @@ type RegisterUserRequest struct {
 }
 
 type LoginRequest struct {
-	Login    string `json:"username" validate:"required"` // could be username or email
+	Login    string `json:"login" validate:"required"` // could be username or email
 	Password string `json:"password" validate:"required"`
 }
 
 type UserDTO struct {
+	ID        string    `json:"id"`
 	Email     string    `json:"email"`
 	Username  string    `json:"username"`
 	CreatedAt time.Time `json:"created_at"`

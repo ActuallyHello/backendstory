@@ -32,17 +32,19 @@ func NewPersonHandler(
 	}
 }
 
-// CreatePerson создает новую персону
+// Create создает новую персону
 // @Summary Создать персону
-// @Description Создает новую запись персоны в системе
-// @Tags persons
+// @Description Создает новую персону в системе
+// @Tags Persons
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param request body dto.CreatePersonRequest true "Данные для создания персоны"
 // @Success 201 {object} dto.PersonDTO "Созданная персона"
 // @Failure 400 {object} dto.ErrorResponse "Ошибка валидации"
-// @Failure 404 {object} dto.ErrorResponse "Пользователь не найден"
-// @Failure 409 {object} dto.ErrorResponse "Конфликт данных"
+// @Failure 401 {object} dto.ErrorResponse "Не авторизован"
+// @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
+// @Failure 409 {object} dto.ErrorResponse "Персона с таким user_login уже существует"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /persons [post]
 func (h *PersonHandler) Create(w http.ResponseWriter, r *http.Request) {
@@ -75,14 +77,16 @@ func (h *PersonHandler) Create(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(h.toPersonDTO(person))
 }
 
-// GetAll возвращает персон
-// @Summary Получить персон
-// @Description Возвращает персону по ее идентификатору
-// @Tags persons
+// GetAll возвращает всех персон
+// @Summary Получить всех персон
+// @Description Возвращает список всех персон в системе
+// @Tags Persons
+// @Accept json
 // @Produce json
-// @Success 200 {object} dto.PersonDTO "Найденная персона"
-// @Failure 400 {object} dto.ErrorResponse "Неверный формат ID"
-// @Failure 404 {object} dto.ErrorResponse "Персона не найдена"
+// @Security BearerAuth
+// @Success 200 {array} dto.PersonDTO "Список персон"
+// @Failure 401 {object} dto.ErrorResponse "Не авторизован"
+// @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /persons [get]
 func (h *PersonHandler) GetAll(w http.ResponseWriter, r *http.Request) {
@@ -105,12 +109,16 @@ func (h *PersonHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 
 // GetById возвращает персону по ID
 // @Summary Получить персону по ID
-// @Description Возвращает персону по ее идентификатору
-// @Tags persons
+// @Description Возвращает персону по указанному идентификатору
+// @Tags Persons
+// @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param id path int true "ID персоны"
-// @Success 200 {object} dto.PersonDTO "Найденная персона"
-// @Failure 400 {object} dto.ErrorResponse "Неверный формат ID"
+// @Success 200 {object} dto.PersonDTO "Персона"
+// @Failure 400 {object} dto.ErrorResponse "Неверный ID"
+// @Failure 401 {object} dto.ErrorResponse "Не авторизован"
+// @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 404 {object} dto.ErrorResponse "Персона не найдена"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /persons/{id} [get]
@@ -139,13 +147,17 @@ func (h *PersonHandler) GetById(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetByUserLogin возвращает персону по логину пользователя
-// @Summary Получить персону по ID пользователя
-// @Description Возвращает персону по идентификатору пользователя
-// @Tags persons
+// @Summary Получить персону по логину пользователя
+// @Description Возвращает персону по указанному логину пользователя
+// @Tags Persons
+// @Accept json
 // @Produce json
-// @Param user_id path int true "ID пользователя"
-// @Success 200 {object} dto.PersonDTO "Найденная персона"
-// @Failure 400 {object} dto.ErrorResponse "Неверный формат user_id"
+// @Security BearerAuth
+// @Param user_login path string true "Логин пользователя"
+// @Success 200 {object} dto.PersonDTO "Персона"
+// @Failure 400 {object} dto.ErrorResponse "Неверный логин пользователя"
+// @Failure 401 {object} dto.ErrorResponse "Не авторизован"
+// @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 404 {object} dto.ErrorResponse "Персона не найдена"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /persons/user/{user_login} [get]
@@ -170,13 +182,17 @@ func (h *PersonHandler) GetByUserLogin(w http.ResponseWriter, r *http.Request) {
 
 // Delete удаляет персону
 // @Summary Удалить персону
-// @Description Удаляет персону (мягкое или полное удаление)
-// @Tags persons
+// @Description Удаляет персону по указанному идентификатору. Поддерживает мягкое удаление (soft delete)
+// @Tags Persons
+// @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param id path int true "ID персоны"
-// @Param soft query bool false "Мягкое удаление (true/false)" default(true)
-// @Success 204 "Персона успешно удалена"
-// @Failure 400 {object} dto.ErrorResponse "Неверный формат ID или параметра soft"
+// @Param soft query boolean false "Флаг мягкого удаления (true/false)" default(true)
+// @Success 204 "Успешно удалено"
+// @Failure 400 {object} dto.ErrorResponse "Неверный ID или параметр soft"
+// @Failure 401 {object} dto.ErrorResponse "Не авторизован"
+// @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 404 {object} dto.ErrorResponse "Персона не найдена"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /persons/{id} [delete]

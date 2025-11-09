@@ -35,12 +35,15 @@ func NewEnumHandler(
 // Create создает новое перечисление
 // @Summary Создать перечисление
 // @Description Создает новое перечисление в системе
-// @Tags enumerations
+// @Tags Enumerations
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param request body dto.EnumCreateRequest true "Данные для создания перечисления"
 // @Success 201 {object} dto.EnumDTO "Созданное перечисление"
 // @Failure 400 {object} dto.ErrorResponse "Ошибка валидации"
+// @Failure 401 {object} dto.ErrorResponse "Не авторизован"
+// @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 409 {object} dto.ErrorResponse "Перечисление с таким кодом уже существует"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /enumerations [post]
@@ -72,14 +75,16 @@ func (h *EnumHandler) Create(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(h.toEnumDTO(enum))
 }
 
-// GetAll возвращает перечисления
-// @Summary Получить перечисления
-// @Description Возвращает перечисление по его идентификатору
-// @Tags enumerations
+// GetAll возвращает все перечисления
+// @Summary Получить все перечисления
+// @Description Возвращает список всех перечислений в системе
+// @Tags Enumerations
+// @Accept json
 // @Produce json
-// @Success 200 {object} dto.EnumDTO "Найденные перечисление"
-// @Failure 400 {object} dto.ErrorResponse "Неверный формат"
-// @Failure 404 {object} dto.ErrorResponse "Перечисление не найдено"
+// @Security BearerAuth
+// @Success 200 {array} dto.EnumDTO "Список перечислений"
+// @Failure 401 {object} dto.ErrorResponse "Не авторизован"
+// @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /enumerations [get]
 func (h *EnumHandler) GetAll(w http.ResponseWriter, r *http.Request) {
@@ -102,12 +107,16 @@ func (h *EnumHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 
 // GetById возвращает перечисление по ID
 // @Summary Получить перечисление по ID
-// @Description Возвращает перечисление по его идентификатору
-// @Tags enumerations
+// @Description Возвращает перечисление по указанному идентификатору
+// @Tags Enumerations
+// @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param id path int true "ID перечисления"
-// @Success 200 {object} dto.EnumDTO "Найденное перечисление"
-// @Failure 400 {object} dto.ErrorResponse "Неверный формат ID"
+// @Success 200 {object} dto.EnumDTO "Перечисление"
+// @Failure 400 {object} dto.ErrorResponse "Неверный ID"
+// @Failure 401 {object} dto.ErrorResponse "Не авторизован"
+// @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 404 {object} dto.ErrorResponse "Перечисление не найдено"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /enumerations/{id} [get]
@@ -137,12 +146,16 @@ func (h *EnumHandler) GetById(w http.ResponseWriter, r *http.Request) {
 
 // GetByCode возвращает перечисление по коду
 // @Summary Получить перечисление по коду
-// @Description Возвращает перечисление по его уникальному коду
-// @Tags enumerations
+// @Description Возвращает перечисление по указанному коду
+// @Tags Enumerations
+// @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param code path string true "Код перечисления"
-// @Success 200 {object} dto.EnumDTO "Найденное перечисление"
-// @Failure 400 {object} dto.ErrorResponse "Код не может быть пустым"
+// @Success 200 {object} dto.EnumDTO "Перечисление"
+// @Failure 400 {object} dto.ErrorResponse "Неверный код"
+// @Failure 401 {object} dto.ErrorResponse "Не авторизован"
+// @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 404 {object} dto.ErrorResponse "Перечисление не найдено"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /enumerations/code/{code} [get]
@@ -165,16 +178,20 @@ func (h *EnumHandler) GetByCode(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(h.toEnumDTO(enum))
 }
 
-// GetAll возвращает перечисления
-// @Summary Получить перечисления
-// @Description Возвращает перечисление по его идентификатору
-// @Tags enumerations
+// GetWithSearchCriteria выполняет поиск перечислений по критериям
+// @Summary Поиск перечислений
+// @Description Выполняет поиск перечислений по заданным критериям
+// @Tags Enumerations
+// @Accept json
 // @Produce json
-// @Success 200 {object} dto.EnumDTO "Найденные перечисление"
-// @Failure 400 {object} dto.ErrorResponse "Неверный формат"
-// @Failure 404 {object} dto.ErrorResponse "Перечисление не найдено"
+// @Security BearerAuth
+// @Param request body dto.SearchCriteria true "Критерии поиска"
+// @Success 200 {array} dto.EnumDTO "Список найденных перечислений"
+// @Failure 400 {object} dto.ErrorResponse "Ошибка валидации"
+// @Failure 401 {object} dto.ErrorResponse "Не авторизован"
+// @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
-// @Router /enumerations [get]
+// @Router /enumerations/search [post]
 func (h *EnumHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -204,56 +221,18 @@ func (h *EnumHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Reque
 	json.NewEncoder(w).Encode(dtos)
 }
 
-// // Update обновляет перечисление
-// // @Summary Обновить перечисление
-// // @Description Обновляет существующее перечисление
-// // @Tags enumerations
-// // @Accept json
-// // @Produce json
-// // @Param request body dto.EnumUpdateRequest true "Данные для обновления"
-// // @Success 204 "Перечисление успешно обновлено"
-// // @Failure 400 {object} dto.ErrorResponse "Ошибка валидации"
-// // @Failure 404 {object} dto.ErrorResponse "Перечисление не найдено"
-// // @Failure 409 {object} dto.ErrorResponse "Конфликт данных (код уже существует)"
-// // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
-// // @Router /enumerations [put]
-// func (h *EnumHandler) Update(w http.ResponseWriter, r *http.Request) {
-// 	ctx := r.Context()
-
-// 	var req dto.EnumUpdateRequest
-// 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-// 		middleware.HandleError(w, r, appErr.NewTechnicalError(err, enumHandlerCode, err.Error()))
-// 		return
-// 	}
-// 	if err := h.validate.Struct(req); err != nil {
-// 		details := common.CollectValidationDetails(err)
-// 		middleware.HandleValidationError(w, r, appErr.NewLogicalError(err, enumHandlerCode, err.Error()), details)
-// 		return
-// 	}
-
-// 	enum := entities.Enum{
-// 		ID:    req.ID,
-// 		Code:  req.Code,
-// 		Label: req.Label,
-// 	}
-// 	_, err := h.enumerationService.Update(ctx, enum)
-// 	if err != nil {
-// 		middleware.HandleError(w, r, err)
-// 		return
-// 	}
-
-// 	w.WriteHeader(http.StatusNoContent)
-// }
-
 // Delete удаляет перечисление
 // @Summary Удалить перечисление
-// @Description Удаляет перечисление (мягкое или полное удаление)
-// @Tags enumerations
+// @Description Удаляет перечисление по указанному идентификатору
+// @Tags Enumerations
+// @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param id path int true "ID перечисления"
-// @Param soft query bool false "Мягкое удаление (true/false)" default(true)
-// @Success 204 "Перечисление успешно удалено"
-// @Failure 400 {object} dto.ErrorResponse "Неверный формат ID или параметра soft"
+// @Success 204 "Успешно удалено"
+// @Failure 400 {object} dto.ErrorResponse "Неверный ID"
+// @Failure 401 {object} dto.ErrorResponse "Не авторизован"
+// @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 404 {object} dto.ErrorResponse "Перечисление не найдено"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /enumerations/{id} [delete]
