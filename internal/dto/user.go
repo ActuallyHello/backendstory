@@ -27,3 +27,9 @@ type JWT struct {
 	RefreshExpiresIn int    `json:"refresh_expires_in"`
 	RefreshToken     string `json:"refresh_token"`
 }
+
+type TokenUserInfo struct {
+	Username string   `json:"username"`
+	Email    string   `json:"email"`
+	Roles    []string `json:"roles"`
+}

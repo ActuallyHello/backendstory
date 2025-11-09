@@ -1,6 +1,10 @@
 package dto
 
-import "time"
+import (
+	"time"
+
+	"github.com/ActuallyHello/backendstory/internal/store/entities"
+)
 
 type CreatePersonRequest struct {
 	FirstName string `json:"firstname" validate:"required,min=2,max=50"`
@@ -27,4 +31,17 @@ type PersonDTO struct {
 	Lastname  string `json:"lastname"`
 	Phone     string `json:"phone"`
 	UserLogin string `json:"user_login"`
+}
+
+func ToPersonDTO(person entities.Person) PersonDTO {
+	return PersonDTO{
+		ID:        person.ID,
+		CreatedAt: person.CreatedAt,
+		UpdatedAt: person.UpdatedAt,
+
+		Firstname: person.Firstname,
+		Lastname:  person.Lastname,
+		Phone:     person.Phone,
+		UserLogin: person.UserLogin,
+	}
 }
