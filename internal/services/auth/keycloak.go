@@ -173,50 +173,77 @@ func (kc *keycloakService) GetRolesByUser(ctx context.Context, username string) 
 	return roles, nil
 }
 
-func (kc *keycloakService) GetRolesFromToken(ctx context.Context, token string) ([]string, error) {
+func (kc *keycloakService) GetTokenUserInfo(ctx context.Context, token string) (dto.TokenUserInfo, error) {
 	_, claims, err := kc.client.DecodeAccessToken(ctx, token, kc.cfg.Realm)
 	if err != nil {
 		slog.Error("Couldn't decode access token", "error", err)
-		return nil, appError.NewTechnicalError(err, keycloakAuthService, err.Error())
+		return dto.TokenUserInfo{}, appError.NewTechnicalError(err, keycloakAuthService, err.Error())
 	}
+
+	var tokenUserInfo dto.TokenUserInfo
+
+	emailRaw, ok := (*claims)["email"]
+	if !ok {
+		slog.Error("Couldn't decode email tag", "error", err)
+		return dto.TokenUserInfo{}, appError.NewLogicalError(nil, keycloakAuthService, "Invalid token structure. There is no any resource_access tags for token")
+	}
+	email, ok := emailRaw.(string)
+	if !ok {
+		slog.Error("Couldn't decode email struct", "error", err)
+		return dto.TokenUserInfo{}, appError.NewLogicalError(nil, keycloakAuthService, "Invalid token structure. Expected client resources!")
+	}
+	tokenUserInfo.Email = email
+
+	usernameRaw, ok := (*claims)["preferred_username"]
+	if !ok {
+		slog.Error("Couldn't decode username tag", "error", err)
+		return dto.TokenUserInfo{}, appError.NewLogicalError(nil, keycloakAuthService, "Invalid token structure. There is no any resource_access tags for token")
+	}
+	username, ok := usernameRaw.(string)
+	if !ok {
+		slog.Error("Couldn't decode username struct", "error", err)
+		return dto.TokenUserInfo{}, appError.NewLogicalError(nil, keycloakAuthService, "Invalid token structure. Expected client resources!")
+	}
+	tokenUserInfo.Username = username
 
 	resource_access, ok := (*claims)["resource_access"]
 	if !ok {
 		slog.Error("Couldn't decode recource access tag", "error", err)
-		return nil, appError.NewLogicalError(nil, keycloakAuthService, "Invalid token structure. There is no any resource_access tags for token")
+		return dto.TokenUserInfo{}, appError.NewLogicalError(nil, keycloakAuthService, "Invalid token structure. There is no any resource_access tags for token")
 	}
 	tokenClients, ok := resource_access.(map[string]any)
 	if !ok {
 		slog.Error("Couldn't decode recource access struct", "error", err)
-		return nil, appError.NewLogicalError(nil, keycloakAuthService, "Invalid token structure. Expected client resources!")
+		return dto.TokenUserInfo{}, appError.NewLogicalError(nil, keycloakAuthService, "Invalid token structure. Expected client resources!")
 	}
 	clientResourcesRaw, ok := tokenClients[kc.cfg.ClientID]
 	if !ok {
 		slog.Error("Couldn't get token clients by client id tag", "error", err)
-		return nil, appError.NewLogicalError(nil, keycloakAuthService, "Invalid token structure. There is no client resources!")
+		return dto.TokenUserInfo{}, appError.NewLogicalError(nil, keycloakAuthService, "Invalid token structure. There is no client resources!")
 	}
 	clientResources, ok := clientResourcesRaw.(map[string]any)
 	if !ok {
 		slog.Error("Couldn't get token clients by client id struct", "error", err)
-		return nil, appError.NewLogicalError(nil, keycloakAuthService, "Invalid token structure. There is no client resources as expected structure!")
+		return dto.TokenUserInfo{}, appError.NewLogicalError(nil, keycloakAuthService, "Invalid token structure. There is no client resources as expected structure!")
 	}
 
 	rolesRaw, ok := clientResources["roles"]
 	if !ok {
 		slog.Error("Couldn't get roles tag", "error", err)
-		return nil, appError.NewLogicalError(nil, keycloakAuthService, "Invalid token structure. There is no any roles for client in token")
+		return dto.TokenUserInfo{}, appError.NewLogicalError(nil, keycloakAuthService, "Invalid token structure. There is no any roles for client in token")
 	}
 	rolesSlice, ok := rolesRaw.([]interface{})
 	if !ok {
 		slog.Error("Couldn't get roles struct", "error", err)
-		return nil, appError.NewLogicalError(nil, keycloakAuthService, "Invalid token structure. Roles structed not in array")
+		return dto.TokenUserInfo{}, appError.NewLogicalError(nil, keycloakAuthService, "Invalid token structure. Roles structed not in array")
 	}
 	roles := make([]string, len(rolesSlice))
 	for i := 0; i < len(rolesSlice); i++ {
 		roles[i] = rolesSlice[i].(string)
 	}
+	tokenUserInfo.Roles = roles
 
-	return roles, nil
+	return tokenUserInfo, nil
 }
 
 func (kc *keycloakService) GetUsers(ctx context.Context) ([]dto.UserDTO, error) {

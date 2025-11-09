@@ -79,6 +79,7 @@ func registerEnumValuesRoutes(r chi.Router, authService auth.AuthService, enumVa
 		r.Get("/", enumValueHandler.GetAll)
 		r.Get(byId, enumValueHandler.GetById)
 		r.Get("/enumeration/{enumeration_id}", enumValueHandler.GetByEnumId)
+		r.Post("/search", enumValueHandler.GetWithSearchCriteria)
 
 		r.Post("/", enumValueHandler.Create)
 		r.Delete(byId, enumValueHandler.Delete)
@@ -92,6 +93,7 @@ func registerPersonRoutes(r chi.Router, authService auth.AuthService, personHand
 		r.Get("/", personHandler.GetAll)
 		r.Get(byId, personHandler.GetById)
 		r.Get("/user/{user_login}", personHandler.GetByUserLogin)
+		r.Post("/search", personHandler.GetWithSearchCriteria)
 
 		r.Post("/", personHandler.Create)
 		r.Delete(byId, personHandler.Delete)
@@ -103,8 +105,12 @@ func registerAuthRoutes(r chi.Router, authService auth.AuthService, authHandler 
 		r.Use(appMiddleware.AuthMiddleware(authService, "admin", "guest"))
 
 		r.Get("/users", authHandler.GetUsers)
-		r.Get("/roles", authHandler.GetRoles)
+		r.Get("/users/{username}", authHandler.GetUser)
 		r.Get("/users/{username}/roles", authHandler.GetUserRoles)
+		r.Get("/roles", authHandler.GetRoles)
+
+		r.Get("/token", authHandler.GetHeaderTokenInfo)
+		r.Post("/token", authHandler.GetBodyTokenInfo)
 	})
 }
 

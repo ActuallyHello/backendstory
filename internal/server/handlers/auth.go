@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"strings"
 
 	appErr "github.com/ActuallyHello/backendstory/internal/core/errors"
 	"github.com/ActuallyHello/backendstory/internal/dto"
@@ -16,6 +17,8 @@ import (
 
 const (
 	authHandlerCode = "AUTH_HANDLER"
+	authorization   = "Authorization"
+	bearer          = "Bearer "
 )
 
 type AuthHandler struct {
@@ -79,8 +82,18 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	tokenUserInfo, err := h.authService.GetTokenUserInfo(ctx, token.AccessToken)
+	if err != nil {
+		middleware.HandleError(w, r, appErr.NewTechnicalError(err, authHandlerCode, err.Error()))
+		return
+	}
+
 	w.WriteHeader(200)
-	json.NewEncoder(w).Encode(token)
+	json.NewEncoder(w).Encode(map[string]any{
+		"token":    token,
+		"username": tokenUserInfo.Username,
+		"roles":    tokenUserInfo.Roles,
+	})
 }
 
 // Login выполняет аутентификацию пользователя
@@ -115,8 +128,18 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	tokenUserInfo, err := h.authService.GetTokenUserInfo(ctx, token.AccessToken)
+	if err != nil {
+		middleware.HandleError(w, r, appErr.NewTechnicalError(err, authHandlerCode, err.Error()))
+		return
+	}
+
 	w.WriteHeader(200)
-	json.NewEncoder(w).Encode(token)
+	json.NewEncoder(w).Encode(map[string]any{
+		"token":    token,
+		"username": tokenUserInfo.Username,
+		"roles":    tokenUserInfo.Roles,
+	})
 }
 
 // GetRoles возвращает список всех ролей
@@ -201,4 +224,113 @@ func (h *AuthHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(200)
 	json.NewEncoder(w).Encode(users)
+}
+
+// GetUser возвращает конкретного пользователя
+// @Summary Получить пользователя
+// @Description Возвращает пользователя по username
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param username path string true "Имя пользователя"
+// @Success 200 {array} dto.UserDTO "Пользователь"
+// @Failure 400 {object} dto.ErrorResponse "Неверное имя пользователя"
+// @Failure 401 {object} dto.ErrorResponse "Не авторизован"
+// @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} dto.ErrorResponse "Пользователь не найден"
+// @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /auth/users/{username} [get]
+func (h *AuthHandler) GetUser(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	username := r.PathValue("username")
+	if username == "" {
+		middleware.HandleError(w, r, appErr.NewLogicalError(nil, authHandlerCode, "username parameter missing"))
+		return
+	}
+
+	userDTO, err := h.authService.GetUserByUsername(ctx, username)
+	if err != nil {
+		middleware.HandleError(w, r, appErr.NewTechnicalError(err, authHandlerCode, err.Error()))
+		return
+	}
+
+	w.WriteHeader(200)
+	json.NewEncoder(w).Encode(userDTO)
+}
+
+// GetTokenInfo возвращает информацию из текущего токена
+// @Summary Получить информацию из текущего токена
+// @Description Возвращает информацию из текущего токена
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {array} dto.TokenInfoDTO "Токен DTO"
+// @Failure 400 {object} dto.ErrorResponse "Неверное формат запроса"
+// @Failure 401 {object} dto.ErrorResponse "Не авторизован"
+// @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} dto.ErrorResponse "Пользователь не найден"
+// @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /auth/token [get]
+func (h *AuthHandler) GetHeaderTokenInfo(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	authHeader := r.Header.Get(authorization)
+	if authHeader == "" {
+		middleware.HandleError(w, r, appErr.NewAccessError(nil, authHandlerCode, "Missing authorization token!"))
+		return
+	}
+
+	token := strings.TrimPrefix(authHeader, bearer)
+	tokenUserInfo, err := h.authService.GetTokenUserInfo(ctx, token)
+	if err != nil {
+		middleware.HandleError(w, r, appErr.NewTechnicalError(err, authHandlerCode, err.Error()))
+		return
+	}
+
+	w.WriteHeader(200)
+	json.NewEncoder(w).Encode(tokenUserInfo)
+}
+
+// GetTokenInfo возвращает информацию из токена
+// @Summary Получить информацию из токена
+// @Description Возвращает информацию из токена
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {array} dto.TokenInfoDTO "Токен DTO"
+// @Failure 400 {object} dto.ErrorResponse "Неверное формат запроса"
+// @Failure 401 {object} dto.ErrorResponse "Не авторизован"
+// @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} dto.ErrorResponse "Пользователь не найден"
+// @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /auth/token [post]
+func (h *AuthHandler) GetBodyTokenInfo(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	tokenReq := struct {
+		Token string `json:"token" validate:"required"`
+	}{}
+
+	if err := json.NewDecoder(r.Body).Decode(&tokenReq); err != nil {
+		middleware.HandleError(w, r, appErr.NewValidationError(err, authHandlerCode, err.Error()))
+		return
+	}
+	if err := h.validate.Struct(tokenReq); err != nil {
+		details := common.CollectValidationDetails(err)
+		middleware.HandleValidationError(w, r, appErr.NewValidationError(err, authHandlerCode, err.Error()), details)
+		return
+	}
+
+	tokenUserInfo, err := h.authService.GetTokenUserInfo(ctx, tokenReq.Token)
+	if err != nil {
+		middleware.HandleError(w, r, appErr.NewTechnicalError(err, authHandlerCode, err.Error()))
+		return
+	}
+
+	w.WriteHeader(200)
+	json.NewEncoder(w).Encode(tokenUserInfo)
 }

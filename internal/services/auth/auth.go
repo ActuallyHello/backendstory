@@ -17,5 +17,5 @@ type AuthService interface {
 	GetUsers(ctx context.Context) ([]dto.UserDTO, error)
 	GetRoles(ctx context.Context) ([]string, error)
 	GetRolesByUser(ctx context.Context, username string) ([]string, error)
-	GetRolesFromToken(ctx context.Context, token string) ([]string, error)
+	GetTokenUserInfo(ctx context.Context, token string) (dto.TokenUserInfo, error)
 }

@@ -27,7 +27,8 @@ func AuthMiddleware(authService auth.AuthService, requiredRoles ...string) func(
 			}
 
 			token := strings.TrimPrefix(authHeader, bearer)
-			roles, err := authService.GetRolesFromToken(ctx, token)
+			tokenUserInfo, err := authService.GetTokenUserInfo(ctx, token)
+			roles := tokenUserInfo.Roles
 			if err != nil {
 				HandleError(w, r, errors.NewAccessError(err, authMiddleware, "Couldn't determinate roles for user!"))
 				return
