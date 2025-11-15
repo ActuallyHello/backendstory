@@ -20,6 +20,7 @@ const (
 
 type PersonService interface {
 	BaseService[entities.Person]
+
 	Create(ctx context.Context, person entities.Person) (entities.Person, error)
 	Update(ctx context.Context, person entities.Person) (entities.Person, error)
 	Delete(ctx context.Context, person entities.Person, soft bool) error

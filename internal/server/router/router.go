@@ -33,11 +33,13 @@ func SetupRouter(container *container.AppContainer) http.Handler {
 		r.Post(register, container.GetAuthHandler().Register)
 		r.Post(login, container.GetAuthHandler().Login)
 
+		registerAuthRoutes(r, container.GetAuthService(), container.GetAuthHandler())
+
 		registerEnumRoutes(r, container.GetAuthService(), container.GetEnumHandler())
 		registerEnumValuesRoutes(r, container.GetAuthService(), container.GetEnumValueHandler())
-
-		registerAuthRoutes(r, container.GetAuthService(), container.GetAuthHandler())
 		registerPersonRoutes(r, container.GetAuthService(), container.GetPersonHandler())
+		registerCategoryRoutes(r, container.GetAuthService(), container.GetCategoryHandler())
+		registerProductRoutes(r, container.GetAuthService(), container.GetProductHandler())
 	})
 
 	r.Get("/swagger/doc.json", func(w http.ResponseWriter, r *http.Request) {
@@ -111,6 +113,36 @@ func registerAuthRoutes(r chi.Router, authService auth.AuthService, authHandler 
 
 		r.Get("/token", authHandler.GetHeaderTokenInfo)
 		r.Post("/token", authHandler.GetBodyTokenInfo)
+	})
+}
+
+func registerCategoryRoutes(r chi.Router, authService auth.AuthService, categoryHandler *handlers.CategoryHandler) {
+	r.Route("/categories", func(r chi.Router) {
+		r.Use(appMiddleware.AuthMiddleware(authService, "admin", "guest"))
+
+		r.Get("/", categoryHandler.GetAll)
+		r.Get("/{id}", categoryHandler.GetById)
+		r.Get("/code/{code}", categoryHandler.GetByCode)
+		r.Get("/category/{category_id}", categoryHandler.GetByCategoryID)
+		r.Post("/search", categoryHandler.GetWithSearchCriteria)
+
+		r.Post("/", categoryHandler.Create)
+		r.Delete("/{id}", categoryHandler.Delete)
+	})
+}
+
+func registerProductRoutes(r chi.Router, authService auth.AuthService, productHandler *handlers.ProductHandler) {
+	r.Route("/products", func(r chi.Router) {
+		r.Use(appMiddleware.AuthMiddleware(authService, "admin", "guest"))
+
+		r.Get("/", productHandler.GetAll)
+		r.Get("/{id}", productHandler.GetById)
+		r.Get("/code/{code}", productHandler.GetByCode)
+		r.Get("/category/{category_id}", productHandler.GetByCategoryID)
+		r.Post("/search", productHandler.GetWithSearchCriteria)
+
+		r.Post("/", productHandler.Create)
+		r.Delete("/{id}", productHandler.Delete)
 	})
 }
 

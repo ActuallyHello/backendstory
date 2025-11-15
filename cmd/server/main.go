@@ -45,11 +45,11 @@ const (
 
 // @x-extension-openapi {"example": "value"}
 func main() {
-	slog.Info("Loading backendstory application...!!!!")
+	slog.Info("Loading backendstory application...")
 
 	config := config.MustLoadConfig(".")
 
-	slog.Info("Config was loaded!", "deployment", config.Deployment, "log level", config.LogLevel)
+	slog.Info("Config was loaded...")
 
 	// appLogger := MustSetupLogger(config.Deployment, config.LogLevel)
 	// slog.SetDefault(appLogger)

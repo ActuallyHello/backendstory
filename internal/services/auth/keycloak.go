@@ -59,7 +59,6 @@ func NewKeycloakService(ctx context.Context, cfg *config.KeycloakConfig) (*keycl
 		slog.Warn("No clients found with ClientID", "clientID", cfg.ClientID)
 	} else {
 		clientUUID = *clients[0].ID
-		slog.Info("Found client", "clientID", cfg.ClientID, "clientUUID", clientUUID)
 	}
 
 	return &keycloakService{

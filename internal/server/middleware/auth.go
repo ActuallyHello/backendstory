@@ -36,6 +36,7 @@ func AuthMiddleware(authService auth.AuthService, requiredRoles ...string) func(
 
 			if !hasRequiredRole(roles, requiredRoles) {
 				HandleError(w, r, errors.NewAccessError(nil, authMiddleware, "forbiden for user"))
+				return
 			}
 
 			next.ServeHTTP(w, r)
