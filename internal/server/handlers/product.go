@@ -33,21 +33,21 @@ func NewProductHandler(
 	}
 }
 
-// Create создает новое категории
-// @Summary Создать категорию
-// @Description Создает новое категорию в системе
-// @Tags Producterations
+// Create создает новый продукт
+// @Summary Создать продукт
+// @Description Создает новый продукт в системе
+// @Tags Products
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param request body dto.ProductCreateRequest true "Данные для создания категории"
-// @Success 201 {object} dto.ProductDTO "Созданное категорию"
+// @Param request body dto.ProductCreateRequest true "Данные для создания продукта"
+// @Success 201 {object} dto.ProductDTO "Созданный продукт"
 // @Failure 400 {object} dto.ErrorResponse "Ошибка валидации"
 // @Failure 401 {object} dto.ErrorResponse "Не авторизован"
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 409 {object} dto.ErrorResponse "Продукт с таким кодом уже существует"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
-// @Router /productes [post]
+// @Router /api/v1/products [post]
 func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -87,18 +87,18 @@ func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(dto.ToProductDTO(product))
 }
 
-// GetAll возвращает все категории
-// @Summary Получить все категории
-// @Description Возвращает список всех категория в системе
-// @Tags Producterations
+// GetAll возвращает все продукты
+// @Summary Получить все продукты
+// @Description Возвращает список всех продуктов в системе
+// @Tags Products
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Success 200 {array} dto.ProductDTO "Список категория"
+// @Success 200 {array} dto.ProductDTO "Список продуктов"
 // @Failure 401 {object} dto.ErrorResponse "Не авторизован"
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
-// @Router /productes [get]
+// @Router /api/v1/products [get]
 func (h *ProductHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -117,21 +117,21 @@ func (h *ProductHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(dtos)
 }
 
-// GetById возвращает категорию по ID
-// @Summary Получить категорию по ID
-// @Description Возвращает категорию по указанному идентификатору
-// @Tags Producterations
+// GetById возвращает продукт по ID
+// @Summary Получить продукт по ID
+// @Description Возвращает продукт по указанному идентификатору
+// @Tags Products
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "ID категории"
+// @Param id path int true "ID продукта"
 // @Success 200 {object} dto.ProductDTO "Продукт"
 // @Failure 400 {object} dto.ErrorResponse "Неверный ID"
 // @Failure 401 {object} dto.ErrorResponse "Не авторизован"
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} dto.ErrorResponse "Продукт не найдено"
+// @Failure 404 {object} dto.ErrorResponse "Продукт не найден"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
-// @Router /productes/{id} [get]
+// @Router /api/v1/products/{id} [get]
 func (h *ProductHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -156,21 +156,21 @@ func (h *ProductHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(dto.ToProductDTO(product))
 }
 
-// GetByCode возвращает категорию по коду
-// @Summary Получить категорию по коду
-// @Description Возвращает категорию по указанному коду
-// @Tags Producterations
+// GetByCode возвращает продукт по коду
+// @Summary Получить продукт по коду
+// @Description Возвращает продукт по указанному коду
+// @Tags Products
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param code path string true "Код категории"
+// @Param code path string true "Код продукта"
 // @Success 200 {object} dto.ProductDTO "Продукт"
 // @Failure 400 {object} dto.ErrorResponse "Неверный код"
 // @Failure 401 {object} dto.ErrorResponse "Не авторизован"
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} dto.ErrorResponse "Продукт не найдено"
+// @Failure 404 {object} dto.ErrorResponse "Продукт не найден"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
-// @Router /productes/code/{code} [get]
+// @Router /api/v1/products/code/{code} [get]
 func (h *ProductHandler) GetByCode(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -190,20 +190,20 @@ func (h *ProductHandler) GetByCode(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(dto.ToProductDTO(product))
 }
 
-// GetWithSearchCriteria выполняет поиск категория по критериям
-// @Summary Поиск категория
-// @Description Выполняет поиск категория по заданным критериям
-// @Tags Producterations
+// GetWithSearchCriteria выполняет поиск продуктов по критериям
+// @Summary Поиск продуктов
+// @Description Выполняет поиск продуктов по заданным критериям
+// @Tags Products
 // @Accept json
 // @Produce json
 // @Security BearerAuth
 // @Param request body dto.SearchCriteria true "Критерии поиска"
-// @Success 200 {array} dto.ProductDTO "Список найденных категория"
+// @Success 200 {array} dto.ProductDTO "Список найденных продуктов"
 // @Failure 400 {object} dto.ErrorResponse "Ошибка валидации"
 // @Failure 401 {object} dto.ErrorResponse "Не авторизован"
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
-// @Router /productes/search [post]
+// @Router /api/v1/products/search [post]
 func (h *ProductHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -233,21 +233,21 @@ func (h *ProductHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Re
 	json.NewEncoder(w).Encode(dtos)
 }
 
-// Delete удаляет категорию
-// @Summary Удалить категорию
-// @Description Удаляет категорию по указанному идентификатору
-// @Tags Producterations
+// Delete удаляет продукт
+// @Summary Удалить продукт
+// @Description Удаляет продукт по указанному идентификатору
+// @Tags Products
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "ID категории"
+// @Param id path int true "ID продукта"
 // @Success 204 "Успешно удалено"
 // @Failure 400 {object} dto.ErrorResponse "Неверный ID"
 // @Failure 401 {object} dto.ErrorResponse "Не авторизован"
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} dto.ErrorResponse "Продукт не найдено"
+// @Failure 404 {object} dto.ErrorResponse "Продукт не найден"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
-// @Router /productes/{id} [delete]
+// @Router /api/v1/products/{id} [delete]
 func (h *ProductHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -276,21 +276,21 @@ func (h *ProductHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// GetByCode возвращает категорию по коду
-// @Summary Получить категорию по коду
-// @Description Возвращает категорию по указанному коду
-// @Tags Producterations
+// GetByCategoryID возвращает продукты по категории
+// @Summary Получить продукты по категории
+// @Description Возвращает продукты по указанной категории
+// @Tags Products
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param code path string true "ID категории"
-// @Success 200 {array} dto.ProductDTO "Продукты"
-// @Failure 400 {object} dto.ErrorResponse "Неверный код"
+// @Param category_id path int true "ID категории"
+// @Success 200 {array} dto.ProductDTO "Список продуктов"
+// @Failure 400 {object} dto.ErrorResponse "Неверная категория"
 // @Failure 401 {object} dto.ErrorResponse "Не авторизован"
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} dto.ErrorResponse "Продукт не найдено"
+// @Failure 404 {object} dto.ErrorResponse "Продукты не найдены"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
-// @Router /productes/category/{category_id} [get]
+// @Router /api/v1/products/category/{category_id} [get]
 func (h *ProductHandler) GetByCategoryID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -301,7 +301,7 @@ func (h *ProductHandler) GetByCategoryID(w http.ResponseWriter, r *http.Request)
 	}
 	categoryID, err := strconv.Atoi(reqCategoryID)
 	if err != nil {
-		middleware.HandleError(w, r, appErr.NewLogicalError(err, enumValueHandlerCode, "CategoryID parameter must be integer!"+err.Error()))
+		middleware.HandleError(w, r, appErr.NewLogicalError(err, productHandlerCode, "CategoryID parameter must be integer!"+err.Error()))
 		return
 	}
 

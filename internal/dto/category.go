@@ -11,7 +11,7 @@ import (
 type CategoryCreateRequest struct {
 	Code       string `json:"code" validate:"required,min=1,max=50"`
 	Label      string `json:"label" validate:"required,min=1,max=255"`
-	CategoryID *uint  `json:"category_id" validate:"omitempty,min=1,max=255"`
+	CategoryID *uint  `json:"category_id" validate:"omitempty,min=1"`
 }
 
 // CategoryUpdateRequest represents request for updating category
@@ -20,7 +20,7 @@ type CategoryUpdateRequest struct {
 	ID         uint   `json:"id" validate:"required"`
 	Code       string `json:"code" validate:"omitempty,min=1,max=50"`
 	Label      string `json:"label" validate:"omitempty,min=1,max=255"`
-	CategoryID *uint  `json:"category_id" validate:"omitempty,min=1,max=255"`
+	CategoryID *uint  `json:"category_id" validate:"omitempty,min=1"`
 }
 
 // CategoryDTO represents category data transfer object

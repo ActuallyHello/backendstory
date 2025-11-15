@@ -33,21 +33,21 @@ func NewCategoryHandler(
 	}
 }
 
-// Create создает новое категории
+// Create создает новую категорию
 // @Summary Создать категорию
-// @Description Создает новое категорию в системе
-// @Tags Categoryerations
+// @Description Создает новую категорию в системе
+// @Tags Categories
 // @Accept json
 // @Produce json
 // @Security BearerAuth
 // @Param request body dto.CategoryCreateRequest true "Данные для создания категории"
-// @Success 201 {object} dto.CategoryDTO "Созданное категорию"
+// @Success 201 {object} dto.CategoryDTO "Созданная категория"
 // @Failure 400 {object} dto.ErrorResponse "Ошибка валидации"
 // @Failure 401 {object} dto.ErrorResponse "Не авторизован"
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 409 {object} dto.ErrorResponse "Категория с таким кодом уже существует"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
-// @Router /categories [post]
+// @Router /api/v1/categories [post]
 func (h *CategoryHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -87,16 +87,16 @@ func (h *CategoryHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 // GetAll возвращает все категории
 // @Summary Получить все категории
-// @Description Возвращает список всех категория в системе
-// @Tags Categoryerations
+// @Description Возвращает список всех категорий в системе
+// @Tags Categories
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Success 200 {array} dto.CategoryDTO "Список категория"
+// @Success 200 {array} dto.CategoryDTO "Список категорий"
 // @Failure 401 {object} dto.ErrorResponse "Не авторизован"
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
-// @Router /categories [get]
+// @Router /api/v1/categories [get]
 func (h *CategoryHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -118,7 +118,7 @@ func (h *CategoryHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 // GetById возвращает категорию по ID
 // @Summary Получить категорию по ID
 // @Description Возвращает категорию по указанному идентификатору
-// @Tags Categoryerations
+// @Tags Categories
 // @Accept json
 // @Produce json
 // @Security BearerAuth
@@ -127,9 +127,9 @@ func (h *CategoryHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 // @Failure 400 {object} dto.ErrorResponse "Неверный ID"
 // @Failure 401 {object} dto.ErrorResponse "Не авторизован"
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} dto.ErrorResponse "Категория не найдено"
+// @Failure 404 {object} dto.ErrorResponse "Категория не найдена"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
-// @Router /categories/{id} [get]
+// @Router /api/v1/categories/{id} [get]
 func (h *CategoryHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -157,7 +157,7 @@ func (h *CategoryHandler) GetById(w http.ResponseWriter, r *http.Request) {
 // GetByCode возвращает категорию по коду
 // @Summary Получить категорию по коду
 // @Description Возвращает категорию по указанному коду
-// @Tags Categoryerations
+// @Tags Categories
 // @Accept json
 // @Produce json
 // @Security BearerAuth
@@ -166,9 +166,9 @@ func (h *CategoryHandler) GetById(w http.ResponseWriter, r *http.Request) {
 // @Failure 400 {object} dto.ErrorResponse "Неверный код"
 // @Failure 401 {object} dto.ErrorResponse "Не авторизован"
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} dto.ErrorResponse "Категория не найдено"
+// @Failure 404 {object} dto.ErrorResponse "Категория не найдена"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
-// @Router /categories/code/{code} [get]
+// @Router /api/v1/categories/code/{code} [get]
 func (h *CategoryHandler) GetByCode(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -188,20 +188,20 @@ func (h *CategoryHandler) GetByCode(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(dto.ToCategoryDTO(category))
 }
 
-// GetWithSearchCriteria выполняет поиск категория по критериям
-// @Summary Поиск категория
-// @Description Выполняет поиск категория по заданным критериям
-// @Tags Categoryerations
+// GetWithSearchCriteria выполняет поиск категорий по критериям
+// @Summary Поиск категорий
+// @Description Выполняет поиск категорий по заданным критериям
+// @Tags Categories
 // @Accept json
 // @Produce json
 // @Security BearerAuth
 // @Param request body dto.SearchCriteria true "Критерии поиска"
-// @Success 200 {array} dto.CategoryDTO "Список найденных категория"
+// @Success 200 {array} dto.CategoryDTO "Список найденных категорий"
 // @Failure 400 {object} dto.ErrorResponse "Ошибка валидации"
 // @Failure 401 {object} dto.ErrorResponse "Не авторизован"
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
-// @Router /categories/search [post]
+// @Router /api/v1/categories/search [post]
 func (h *CategoryHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -234,7 +234,7 @@ func (h *CategoryHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.R
 // Delete удаляет категорию
 // @Summary Удалить категорию
 // @Description Удаляет категорию по указанному идентификатору
-// @Tags Categoryerations
+// @Tags Categories
 // @Accept json
 // @Produce json
 // @Security BearerAuth
@@ -243,9 +243,9 @@ func (h *CategoryHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.R
 // @Failure 400 {object} dto.ErrorResponse "Неверный ID"
 // @Failure 401 {object} dto.ErrorResponse "Не авторизован"
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} dto.ErrorResponse "Категория не найдено"
+// @Failure 404 {object} dto.ErrorResponse "Категория не найдена"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
-// @Router /categories/{id} [delete]
+// @Router /api/v1/categories/{id} [delete]
 func (h *CategoryHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -275,20 +275,20 @@ func (h *CategoryHandler) Delete(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetByCategoryID возвращает категории по родителю
-// @Summary Получить категорию по родителю
-// @Description Возвращает категорию по указанному родителю
-// @Tags Categoryerations
+// @Summary Получить категории по родителю
+// @Description Возвращает категории по указанному родителю
+// @Tags Categories
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param category_id path string true "ID родителя категории"
-// @Success 200 {object} dto.CategoryDTO "Категория"
+// @Param category_id path int true "ID родителя категории"
+// @Success 200 {array} dto.CategoryDTO "Список категорий"
 // @Failure 400 {object} dto.ErrorResponse "Неверная категория"
 // @Failure 401 {object} dto.ErrorResponse "Не авторизован"
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} dto.ErrorResponse "Категория не найдено"
+// @Failure 404 {object} dto.ErrorResponse "Категория не найдена"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
-// @Router /categories/category/{category_id} [get]
+// @Router /api/v1/categories/category/{category_id} [get]
 func (h *CategoryHandler) GetByCategoryID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -299,7 +299,7 @@ func (h *CategoryHandler) GetByCategoryID(w http.ResponseWriter, r *http.Request
 	}
 	categoryID, err := strconv.Atoi(reqCategoryID)
 	if err != nil {
-		middleware.HandleError(w, r, appErr.NewLogicalError(err, enumValueHandlerCode, "CategoryID parameter must be integer!"+err.Error()))
+		middleware.HandleError(w, r, appErr.NewLogicalError(err, categoryHandlerCode, "CategoryID parameter must be integer!"+err.Error()))
 		return
 	}
 

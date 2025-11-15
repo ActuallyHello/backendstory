@@ -14,7 +14,7 @@ type ProductCreateRequest struct {
 	Sku        string `json:"sku" validate:"required,min=1,max=255"`
 	Price      string `json:"price" validate:"required,min=1,max=30"`
 	Quantity   uint   `json:"quantity" validate:"required,gte=0"`
-	CategoryID uint   `json:"category_id" validate:"required,min=1,max=255"`
+	CategoryID uint   `json:"category_id" validate:"required,min=1"`
 	StatusID   uint   `json:"status_id" validate:"required,gt=0"`
 }
 
@@ -39,9 +39,9 @@ type ProductDTO struct {
 	UpdatedAt  time.Time `json:"updated_at"`
 	Code       string    `json:"code"`
 	Label      string    `json:"label"`
-	Sku        string    `json:"sku" validate:"required,min=1,max=255"`
-	Price      string    `json:"price" validate:"required,min=1,max=30"`
-	Quantity   uint      `json:"quantity" validate:"required,gte=0"`
+	Sku        string    `json:"sku"`
+	Price      string    `json:"price"`
+	Quantity   uint      `json:"quantity"`
 	CategoryID uint      `json:"category_id"`
 	StatusID   uint      `json:"status_id"`
 }
