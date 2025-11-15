@@ -2,6 +2,8 @@ package dto
 
 import "time"
 
+// ErrorResponse represents standard error response
+// @Name ErrorResponse
 type ErrorResponse struct {
 	Status    int       `json:"status"`
 	Code      string    `json:"code"`
@@ -11,6 +13,8 @@ type ErrorResponse struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
+// ValidationErrorResponse represents validation error response
+// @Name ValidationErrorResponse
 type ValidationErrorResponse struct {
 	ErrorResponse
 	Details map[string]string `json:"details"`

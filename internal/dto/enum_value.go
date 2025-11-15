@@ -1,6 +1,8 @@
 package dto
 
 import (
+	"time"
+
 	"github.com/ActuallyHello/backendstory/internal/store/entities"
 )
 
@@ -23,17 +25,21 @@ type EnumValueUpdateRequest struct {
 // EnumValueDTO represents enum value data transfer object
 // @Name EnumValueDTO
 type EnumValueDTO struct {
-	ID     uint   `json:"id"`
-	Code   string `json:"code"`
-	Label  string `json:"label"`
-	EnumID uint   `json:"enum_id"`
+	ID        uint      `json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	Code      string    `json:"code"`
+	Label     string    `json:"label"`
+	EnumID    uint      `json:"enum_id"`
 }
 
 func ToEnumValueDTO(enumValue entities.EnumValue) EnumValueDTO {
 	return EnumValueDTO{
-		ID:     enumValue.ID,
-		Code:   enumValue.Code,
-		Label:  enumValue.Label,
-		EnumID: enumValue.EnumID,
+		ID:        enumValue.ID,
+		CreatedAt: enumValue.CreatedAt,
+		UpdatedAt: enumValue.UpdatedAt,
+		Code:      enumValue.Code,
+		Label:     enumValue.Label,
+		EnumID:    enumValue.EnumID,
 	}
 }
