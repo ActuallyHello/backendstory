@@ -26,17 +26,23 @@ type AppContainer struct {
 	enumRepo      repositories.EnumRepository
 	enumValueRepo repositories.EnumValueRepository
 	personRepo    repositories.PersonRepository
+	categoryRepo  repositories.CategoryRepository
+	productRepo   repositories.ProductRepository
 
 	// services
 	enumService      services.EnumService
 	enumValueService services.EnumValueService
 	personService    services.PersonService
+	categoryService  services.CategoryService
+	productService   services.ProductService
 
 	// handlers
 	authHandler      *handlers.AuthHandler
 	enumHandler      *handlers.EnumHandler
 	enumValueHandler *handlers.EnumValueHandler
 	personHandler    *handlers.PersonHandler
+	categoryHandler  *handlers.CategoryHandler
+	productHandler   *handlers.ProductHandler
 
 	// auth
 	authService auth.AuthService
@@ -58,11 +64,15 @@ func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
 	enumRepo := repositories.NewEnumRepository(db)
 	enumValueRepo := repositories.NewEnumValueRepository(db)
 	personRepo := repositories.NewPersonRepository(db)
+	categoryRepo := repositories.NewCategoryRepository(db)
+	productRepo := repositories.NewProductRepository(db)
 
 	// services
 	enumService := services.NewEnumService(enumRepo)
 	enumValueService := services.NewEnumValueService(enumValueRepo)
 	personService := services.NewPersonService(personRepo)
+	categoryService := services.NewCategoryService(categoryRepo)
+	productService := services.NewProductService(productRepo)
 
 	// auth
 	keycloakService, err := auth.NewKeycloakService(ctx, appConfig.KeycloakConfig)
@@ -76,6 +86,8 @@ func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
 	enumValueHandler := handlers.NewEnumValueHandler(enumValueService)
 	personHandler := handlers.NewPersonHandler(personService)
 	authHandler := handlers.NewAuthHandler(keycloakService)
+	categoryHandler := handlers.NewCategoryHandler(categoryService)
+	productHandler := handlers.NewProductHandler(productService)
 
 	return &AppContainer{
 		// application
@@ -88,17 +100,23 @@ func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
 		enumRepo:      enumRepo,
 		enumValueRepo: enumValueRepo,
 		personRepo:    personRepo,
+		categoryRepo:  categoryRepo,
+		productRepo:   productRepo,
 
 		// services
 		enumService:      enumService,
 		enumValueService: enumValueService,
 		personService:    personService,
+		categoryService:  categoryService,
+		productService:   productService,
 
 		// handlers
 		authHandler:      authHandler,
 		enumHandler:      enumHandler,
 		enumValueHandler: enumValueHandler,
 		personHandler:    personHandler,
+		categoryHandler:  categoryHandler,
+		productHandler:   productHandler,
 
 		// auth
 		authService: keycloakService,
@@ -138,6 +156,14 @@ func (c *AppContainer) GetPersonRepository() repositories.PersonRepository {
 	return c.personRepo
 }
 
+func (c *AppContainer) GetCategoryRepository() repositories.CategoryRepository {
+	return c.categoryRepo
+}
+
+func (c *AppContainer) GetProductRepository() repositories.ProductRepository {
+	return c.productRepo
+}
+
 // Services
 func (c *AppContainer) GetEnumService() services.EnumService {
 	return c.enumService
@@ -149,6 +175,14 @@ func (c *AppContainer) GetEnumValueService() services.EnumValueService {
 
 func (c *AppContainer) GetPersonService() services.PersonService {
 	return c.personService
+}
+
+func (c *AppContainer) GetCategoryService() services.CategoryService {
+	return c.categoryService
+}
+
+func (c *AppContainer) GetProductService() services.ProductService {
+	return c.productService
 }
 
 // Handlers
@@ -166,6 +200,14 @@ func (c *AppContainer) GetEnumValueHandler() *handlers.EnumValueHandler {
 
 func (c *AppContainer) GetPersonHandler() *handlers.PersonHandler {
 	return c.personHandler
+}
+
+func (c *AppContainer) GetCategoryHandler() *handlers.CategoryHandler {
+	return c.categoryHandler
+}
+
+func (c *AppContainer) GetProductHandler() *handlers.ProductHandler {
+	return c.productHandler
 }
 
 // Auth
