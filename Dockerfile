@@ -29,6 +29,9 @@ COPY --from=builder /app/migrations ./migrations
 COPY --from=builder /app/docs ./docs
 COPY --from=builder /go/bin/goose /usr/local/bin/
 
+# СОЗДАЕМ ПАПКУ ДЛЯ МЕДИА ФАЙЛОВ
+RUN mkdir -p /root/static/media
+
 # ЯВНО копируем entrypoint с хоста в текущую директорию (/root/)
 COPY migrations-entrypoint.sh ./
 RUN chmod +x ./migrations-entrypoint.sh

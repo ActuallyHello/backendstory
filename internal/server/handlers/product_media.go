@@ -19,6 +19,8 @@ const (
 	productMediaHandlerCode = "PRODUCT_MEDIA_HANDLER"
 )
 
+// ProductMediaHandler provides handlers for product media operations
+// @Description Handler for managing product images and media files
 type ProductMediaHandler struct {
 	validate            *validator.Validate
 	productMediaService services.ProductMediaService
@@ -27,6 +29,9 @@ type ProductMediaHandler struct {
 	staticFilesPath     string
 }
 
+// NewProductMediaHandler creates a new ProductMediaHandler instance
+// @Summary Create product media handler
+// @Description Initializes a new product media handler with required dependencies
 func NewProductMediaHandler(
 	productMediaService services.ProductMediaService,
 	productService services.ProductService,
@@ -45,19 +50,19 @@ func NewProductMediaHandler(
 
 // UploadImage загружает изображение для товара
 // @Summary Загрузить изображение товара
-// @Description Загружает изображение для указанного товара
+// @Description Загружает изображение для указанного товара. Поддерживаемые форматы: JPEG, PNG, GIF. Максимальный размер файла: 10MB.
 // @Tags Product Media
 // @Accept multipart/form-data
 // @Produce json
 // @Security BearerAuth
-// @Param product_id formData int true "ID товара"
+// @Param product_id formData integer true "ID товара" minimum(1)
 // @Param file formData file true "Изображение товара"
-// @Success 201 {object} dto.ProductMediaDTO "Загруженное изображение"
-// @Failure 400 {object} dto.ErrorResponse "Ошибка валидации"
-// @Failure 401 {object} dto.ErrorResponse "Не авторизован"
-// @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
+// @Success 201 {object} dto.ProductMediaDTO "Изображение успешно загружено"
+// @Failure 400 {object} dto.ErrorResponse "Неверный запрос: отсутствует product_id или файл, неверный формат данных"
+// @Failure 401 {object} dto.ErrorResponse "Требуется аутентификация"
+// @Failure 403 {object} dto.ErrorResponse "Доступ запрещен: недостаточно прав"
 // @Failure 404 {object} dto.ErrorResponse "Товар не найден"
-// @Failure 413 {object} dto.ErrorResponse "Файл слишком большой"
+// @Failure 413 {object} dto.ErrorResponse "Превышен максимальный размер файла (10MB)"
 // @Failure 415 {object} dto.ErrorResponse "Неподдерживаемый тип файла"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /api/v1/product-media/upload [post]
@@ -96,6 +101,7 @@ func (h *ProductMediaHandler) UploadImage(w http.ResponseWriter, r *http.Request
 		middleware.HandleError(w, r, appErr.NewLogicalError(err, productMediaHandlerCode, "Failed to get file from form"))
 		return
 	}
+	defer file.Close()
 
 	filePath, err := h.fileService.CreateFromWeb(file, header, h.staticFilesPath)
 	if err != nil {
@@ -119,16 +125,16 @@ func (h *ProductMediaHandler) UploadImage(w http.ResponseWriter, r *http.Request
 
 // GetByProductID возвращает все изображения для товара
 // @Summary Получить изображения товара
-// @Description Возвращает все изображения для указанного товара
+// @Description Возвращает все изображения для указанного товара. Для доступа требуется аутентификация.
 // @Tags Product Media
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param product_id path int true "ID товара"
-// @Success 200 {array} dto.ProductMediaDTO "Список изображений"
-// @Failure 400 {object} dto.ErrorResponse "Неверный ID"
-// @Failure 401 {object} dto.ErrorResponse "Не авторизован"
-// @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
+// @Param product_id path integer true "ID товара" minimum(1)
+// @Success 200 {array} dto.ProductMediaDTO "Список изображений товара"
+// @Failure 400 {object} dto.ErrorResponse "Неверный ID товара"
+// @Failure 401 {object} dto.ErrorResponse "Требуется аутентификация"
+// @Failure 403 {object} dto.ErrorResponse "Доступ запрещен: недостаточно прав"
 // @Failure 404 {object} dto.ErrorResponse "Товар не найден"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /api/v1/product-media/product/{product_id} [get]
@@ -171,16 +177,16 @@ func (h *ProductMediaHandler) GetByProductID(w http.ResponseWriter, r *http.Requ
 
 // Delete удаляет изображение товара
 // @Summary Удалить изображение товара
-// @Description Удаляет изображение товара по ID
+// @Description Удаляет изображение товара по ID. Удаляет как запись из БД, так и файл с диска.
 // @Tags Product Media
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "ID изображения"
-// @Success 204 "Изображение удалено"
-// @Failure 400 {object} dto.ErrorResponse "Неверный ID"
-// @Failure 401 {object} dto.ErrorResponse "Не авторизован"
-// @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
+// @Param id path integer true "ID изображения" minimum(1)
+// @Success 204 "Изображение успешно удалено"
+// @Failure 400 {object} dto.ErrorResponse "Неверный ID изображения"
+// @Failure 401 {object} dto.ErrorResponse "Требуется аутентификация"
+// @Failure 403 {object} dto.ErrorResponse "Доступ запрещен: недостаточно прав"
 // @Failure 404 {object} dto.ErrorResponse "Изображение не найдено"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /api/v1/product-media/{id} [delete]

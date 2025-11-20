@@ -16,6 +16,8 @@ services:
       - KEYCLOAK_PORT=8080  # на 8080 для внутренней связи
     ports:
       - "${SERVER_PORT:-8080}:8080"
+    volumes:
+      - media_volume:/root/static/media  # Volume для сохранения медиа файлов
     depends_on:
       backendstory-mysql:
         condition: service_healthy
@@ -88,3 +90,4 @@ services:
 
 volumes:
   mysql_data:
+  media_volume:
