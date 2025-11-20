@@ -42,8 +42,7 @@ func NewAuthHandler(
 // @Accept json
 // @Produce json
 // @Param request body dto.RegisterUserRequest true "Данные для регистрации"
-// @Success 200 {object} dto.JWT "JWT токен"
-// @Failure 400 {object} dto.ErrorResponse "Ошибка валидации"
+// @Success 200 {object} dto.LoginResponse "Данные для входа"
 // @Failure 409 {object} dto.ErrorResponse "Пользователь уже существует"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /register [post]
@@ -88,12 +87,14 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	loginResponse := dto.LoginResponse{
+		Token:    token,
+		Username: tokenUserInfo.Username,
+		Roles:    tokenUserInfo.Roles,
+	}
+
 	w.WriteHeader(200)
-	json.NewEncoder(w).Encode(map[string]any{
-		"token":    token,
-		"username": tokenUserInfo.Username,
-		"roles":    tokenUserInfo.Roles,
-	})
+	json.NewEncoder(w).Encode(loginResponse)
 }
 
 // Login выполняет аутентификацию пользователя
@@ -103,7 +104,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param request body dto.LoginRequest true "Данные для входа"
-// @Success 200 {object} dto.JWT "JWT токен"
+// @Success 200 {object} dto.LoginResponse "Данные для входа"
 // @Failure 400 {object} dto.ErrorResponse "Ошибка валидации"
 // @Failure 401 {object} dto.ErrorResponse "Неверные учетные данные"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
@@ -134,12 +135,14 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	loginResponse := dto.LoginResponse{
+		Token:    token,
+		Username: tokenUserInfo.Username,
+		Roles:    tokenUserInfo.Roles,
+	}
+
 	w.WriteHeader(200)
-	json.NewEncoder(w).Encode(map[string]any{
-		"token":    token,
-		"username": tokenUserInfo.Username,
-		"roles":    tokenUserInfo.Roles,
-	})
+	json.NewEncoder(w).Encode(loginResponse)
 }
 
 // GetRoles возвращает список всех ролей

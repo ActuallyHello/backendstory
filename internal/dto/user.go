@@ -18,6 +18,14 @@ type LoginRequest struct {
 	Password string `json:"password" validate:"required"`
 }
 
+// LoginResponse represents response for user login
+// @Name LoginResponse
+type LoginResponse struct {
+	Token    JWT      `json:"token"`
+	Username string   `json:"username"`
+	Roles    []string `json:"roles"`
+}
+
 // UserDTO represents user data transfer object
 // @Name UserDTO
 type UserDTO struct {

@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"log/slog"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/ActuallyHello/backendstory/internal/config"
@@ -58,7 +60,21 @@ func main() {
 
 	slog.Info("Dependency container uploaded! Application ready to start!")
 
-	r := router.SetupRouter(container)
+	// Получаем текущую рабочую директорию
+	workDir, err := os.Getwd()
+	if err != nil {
+		panic(fmt.Sprintf("Failed to get working directory: %v", err))
+	}
+	// Создаем абсолютный путь к статическим файлам
+	staticFilesPath := filepath.Join(workDir, config.ServerConfig.StaticFilesPath)
+	// Создаем директорию если она не существует
+	fullPath := filepath.Join(staticFilesPath, "imgs", "products")
+	if err := os.MkdirAll(fullPath, 0755); err != nil {
+		panic(fmt.Sprintf("Failed to create static directory: %v", err))
+	}
+	slog.Info("Static directories created", "path", fullPath)
+
+	r := router.SetupRouter(container, config.ServerConfig.StaticFilesPath)
 
 	slog.Info("Starting server on port " + config.ServerConfig.Addr)
 

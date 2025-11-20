@@ -10,6 +10,7 @@ import (
 	"github.com/ActuallyHello/backendstory/internal/server/handlers"
 	"github.com/ActuallyHello/backendstory/internal/services"
 	"github.com/ActuallyHello/backendstory/internal/services/auth"
+	"github.com/ActuallyHello/backendstory/internal/services/resources"
 	"github.com/ActuallyHello/backendstory/internal/store/repositories"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -23,26 +24,32 @@ type AppContainer struct {
 	db *gorm.DB
 
 	// repositoriest
-	enumRepo      repositories.EnumRepository
-	enumValueRepo repositories.EnumValueRepository
-	personRepo    repositories.PersonRepository
-	categoryRepo  repositories.CategoryRepository
-	productRepo   repositories.ProductRepository
+	enumRepo         repositories.EnumRepository
+	enumValueRepo    repositories.EnumValueRepository
+	personRepo       repositories.PersonRepository
+	categoryRepo     repositories.CategoryRepository
+	productRepo      repositories.ProductRepository
+	productMediaRepo repositories.ProductMediaRepository
 
 	// services
-	enumService      services.EnumService
-	enumValueService services.EnumValueService
-	personService    services.PersonService
-	categoryService  services.CategoryService
-	productService   services.ProductService
+	enumService         services.EnumService
+	enumValueService    services.EnumValueService
+	personService       services.PersonService
+	categoryService     services.CategoryService
+	productService      services.ProductService
+	productMediaService services.ProductMediaService
+
+	// resources
+	fileService resources.FileService
 
 	// handlers
-	authHandler      *handlers.AuthHandler
-	enumHandler      *handlers.EnumHandler
-	enumValueHandler *handlers.EnumValueHandler
-	personHandler    *handlers.PersonHandler
-	categoryHandler  *handlers.CategoryHandler
-	productHandler   *handlers.ProductHandler
+	authHandler         *handlers.AuthHandler
+	enumHandler         *handlers.EnumHandler
+	enumValueHandler    *handlers.EnumValueHandler
+	personHandler       *handlers.PersonHandler
+	categoryHandler     *handlers.CategoryHandler
+	productHandler      *handlers.ProductHandler
+	productMediaHandler *handlers.ProductMediaHandler
 
 	// auth
 	authService auth.AuthService
@@ -66,6 +73,7 @@ func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
 	personRepo := repositories.NewPersonRepository(db)
 	categoryRepo := repositories.NewCategoryRepository(db)
 	productRepo := repositories.NewProductRepository(db)
+	productMediaRepo := repositories.NewProductMediaRepository(db)
 
 	// services
 	enumService := services.NewEnumService(enumRepo)
@@ -73,6 +81,7 @@ func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
 	personService := services.NewPersonService(personRepo)
 	categoryService := services.NewCategoryService(categoryRepo)
 	productService := services.NewProductService(productRepo)
+	productMediaService := services.NewProductMediaService(productMediaRepo)
 
 	// auth
 	keycloakService, err := auth.NewKeycloakService(ctx, appConfig.KeycloakConfig)
@@ -89,6 +98,9 @@ func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
 	categoryHandler := handlers.NewCategoryHandler(categoryService)
 	productHandler := handlers.NewProductHandler(productService)
 
+	// refactor
+	productMediaHandler := handlers.NewProductMediaHandler(productMediaService, productService, resources.FileService{}, "static/media")
+
 	return &AppContainer{
 		// application
 		ctx: ctx,
@@ -97,26 +109,31 @@ func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
 		db: db,
 
 		// repositoriest
-		enumRepo:      enumRepo,
-		enumValueRepo: enumValueRepo,
-		personRepo:    personRepo,
-		categoryRepo:  categoryRepo,
-		productRepo:   productRepo,
+		enumRepo:         enumRepo,
+		enumValueRepo:    enumValueRepo,
+		personRepo:       personRepo,
+		categoryRepo:     categoryRepo,
+		productRepo:      productRepo,
+		productMediaRepo: productMediaRepo,
 
 		// services
-		enumService:      enumService,
-		enumValueService: enumValueService,
-		personService:    personService,
-		categoryService:  categoryService,
-		productService:   productService,
+		enumService:         enumService,
+		enumValueService:    enumValueService,
+		personService:       personService,
+		categoryService:     categoryService,
+		productService:      productService,
+		productMediaService: productMediaService,
+
+		fileService: resources.FileService{},
 
 		// handlers
-		authHandler:      authHandler,
-		enumHandler:      enumHandler,
-		enumValueHandler: enumValueHandler,
-		personHandler:    personHandler,
-		categoryHandler:  categoryHandler,
-		productHandler:   productHandler,
+		authHandler:         authHandler,
+		enumHandler:         enumHandler,
+		enumValueHandler:    enumValueHandler,
+		personHandler:       personHandler,
+		categoryHandler:     categoryHandler,
+		productHandler:      productHandler,
+		productMediaHandler: productMediaHandler,
 
 		// auth
 		authService: keycloakService,
@@ -164,6 +181,10 @@ func (c *AppContainer) GetProductRepository() repositories.ProductRepository {
 	return c.productRepo
 }
 
+func (c *AppContainer) GetProductMediaRepository() repositories.ProductMediaRepository {
+	return c.productMediaRepo
+}
+
 // Services
 func (c *AppContainer) GetEnumService() services.EnumService {
 	return c.enumService
@@ -183,6 +204,14 @@ func (c *AppContainer) GetCategoryService() services.CategoryService {
 
 func (c *AppContainer) GetProductService() services.ProductService {
 	return c.productService
+}
+
+func (c *AppContainer) GetProductMediaService() services.ProductMediaService {
+	return c.productMediaService
+}
+
+func (c *AppContainer) GetFileService() resources.FileService {
+	return c.fileService
 }
 
 // Handlers
@@ -208,6 +237,10 @@ func (c *AppContainer) GetCategoryHandler() *handlers.CategoryHandler {
 
 func (c *AppContainer) GetProductHandler() *handlers.ProductHandler {
 	return c.productHandler
+}
+
+func (c *AppContainer) GetProductMediaHandler() *handlers.ProductMediaHandler {
+	return c.productMediaHandler
 }
 
 // Auth

@@ -3,8 +3,9 @@ package config
 import "time"
 
 type ServerConfig struct {
-	Addr          string        `mapstructure:"addr"`
-	TimeoutConfig TimeoutConfig `mapstructure:"timeout"`
+	Addr            string        `mapstructure:"addr"`
+	TimeoutConfig   TimeoutConfig `mapstructure:"timeout"`
+	StaticFilesPath string        `mapstructure:"static"`
 }
 
 type TimeoutConfig struct {

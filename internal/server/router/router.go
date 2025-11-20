@@ -2,6 +2,8 @@ package router
 
 import (
 	"net/http"
+	"os"
+	"path/filepath"
 
 	"github.com/ActuallyHello/backendstory/internal/core/container"
 	handlers "github.com/ActuallyHello/backendstory/internal/server/handlers"
@@ -19,15 +21,14 @@ const (
 	byId     = "/{id}"
 )
 
-func SetupRouter(container *container.AppContainer) http.Handler {
+func SetupRouter(container *container.AppContainer, staticFilesPath string) http.Handler {
 	r := chi.NewRouter()
-
-	// TODO:
-	//  3. unless-stop -> 3 retry
 
 	r.Use(middleware.Logger)
 	// custom ErrorHandler
 	r.Use(appMiddleware.ErrorHandler)
+	// static files
+	setupStaticRoutes(r, staticFilesPath)
 
 	r.Route(apiV1, func(r chi.Router) {
 		r.Post(register, container.GetAuthHandler().Register)
@@ -40,6 +41,7 @@ func SetupRouter(container *container.AppContainer) http.Handler {
 		registerPersonRoutes(r, container.GetAuthService(), container.GetPersonHandler())
 		registerCategoryRoutes(r, container.GetAuthService(), container.GetCategoryHandler())
 		registerProductRoutes(r, container.GetAuthService(), container.GetProductHandler())
+		registerProductMediaRoutes(r, container.GetAuthService(), container.GetProductMediaHandler())
 	})
 
 	r.Get("/swagger/doc.json", func(w http.ResponseWriter, r *http.Request) {
@@ -143,6 +145,32 @@ func registerProductRoutes(r chi.Router, authService auth.AuthService, productHa
 
 		r.Post("/", productHandler.Create)
 		r.Delete("/{id}", productHandler.Delete)
+	})
+}
+
+// setupStaticRoutes настраивает раздачу статических файлов
+func setupStaticRoutes(r chi.Router, staticFilesPath string) {
+	// Создаем файловый сервер для статических файлов
+	workDir, _ := os.Getwd()
+	filesDir := http.Dir(filepath.Join(workDir, staticFilesPath))
+
+	// Настраиваем маршрут для статических файлов
+	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(filesDir)))
+}
+
+// registerProductMediaRoutes регистрирует маршруты для работы с медиа товаров
+func registerProductMediaRoutes(r chi.Router, authService auth.AuthService, productMediaHandler *handlers.ProductMediaHandler) {
+	r.Route("/product-media", func(r chi.Router) {
+		r.Use(appMiddleware.AuthMiddleware(authService, "admin", "guest"))
+
+		// Загрузка изображения
+		r.Post("/upload", productMediaHandler.UploadImage)
+
+		// Получение изображений по product_id
+		r.Get("/product/{product_id}", productMediaHandler.GetByProductID)
+
+		// Удаление изображения
+		r.Delete("/{id}", productMediaHandler.Delete)
 	})
 }
 

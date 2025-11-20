@@ -23,7 +23,6 @@ func MustLoadConfig(path string) *ApplicationConfig {
 		commonConfigPath = "."
 		configName       = "application"
 		configType       = "yaml"
-		configRoot       = "app"
 	)
 
 	if _, err := os.Stat(".env"); err == nil {
@@ -49,31 +48,39 @@ func MustLoadConfig(path string) *ApplicationConfig {
 		log.Fatalf("error while reading config file: %v", err)
 	}
 
-	replaceEnv()
+	// Получаем субвипер для секции "app"
+	appViper := viper.Sub("app")
+	if appViper == nil {
+		log.Fatal("config section 'app' not found")
+	}
+
+	// Обрабатываем переменные окружения в субвипере
+	replaceEnv(appViper)
 
 	var applicationConfig ApplicationConfig
-	if err := viper.UnmarshalKey(configRoot, &applicationConfig); err != nil {
+	// Unmarshal из субвипера (без ключа, так как мы уже в секции "app")
+	if err := appViper.Unmarshal(&applicationConfig); err != nil {
 		log.Fatalf("error while unmarshal config file: %v", err)
 	}
 
 	return &applicationConfig
 }
 
-func replaceEnv() {
-	keys := viper.AllKeys()
+func replaceEnv(v *viper.Viper) {
+	keys := v.AllKeys()
 	for _, key := range keys {
-		value := viper.GetString(key)
+		value := v.GetString(key)
 		if strings.Contains(value, "${") {
 			expandedVal := expandEnv(value)
-			viper.Set(key, expandedVal)
+			v.Set(key, expandedVal)
 		}
 	}
 }
 
+// expandEnv остается без изменений
 func expandEnv(s string) string {
 	return os.Expand(s, func(value string) string {
-		// Обрабатываем значения по умолчанию ${VAR:default}
-		if strings.Contains(s, ":") {
+		if strings.Contains(value, ":") {
 			parts := strings.SplitN(value, ":", 2)
 			envValue := os.Getenv(parts[0])
 			if envValue == "" {
