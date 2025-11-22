@@ -22,14 +22,20 @@ const (
 type ProductHandler struct {
 	validate              *validator.Validate
 	producterationService services.ProductService
+	enumValueService      services.EnumValueService
+	categoryService       services.CategoryService
 }
 
 func NewProductHandler(
 	producterationService services.ProductService,
+	enumValueService services.EnumValueService,
+	categoryService services.CategoryService,
 ) *ProductHandler {
 	return &ProductHandler{
 		validate:              validator.New(),
 		producterationService: producterationService,
+		enumValueService:      enumValueService,
+		categoryService:       categoryService,
 	}
 }
 
@@ -62,9 +68,20 @@ func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// check price
 	price, err := decimal.NewFromString(req.Price)
 	if err != nil {
 		middleware.HandleError(w, r, appErr.NewLogicalError(err, productHandlerCode, err.Error()))
+		return
+	}
+	// check status
+	if _, err := h.enumValueService.GetByID(ctx, req.StatusID); err != nil {
+		middleware.HandleError(w, r, err)
+		return
+	}
+	// check category
+	if _, err := h.categoryService.GetByID(ctx, req.CategoryID); err != nil {
+		middleware.HandleError(w, r, err)
 		return
 	}
 

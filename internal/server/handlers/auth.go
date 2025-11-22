@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"errors"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -60,27 +59,29 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := h.authService.RegisterUser(ctx, req.Username, req.Email, req.Password)
+	// check if user with same email exists
+	if _, err := h.authService.GetUserByEmail(ctx, req.Email); err == nil {
+		middleware.HandleError(w, r, appErr.NewLogicalError(nil, authHandlerCode, "User with this email already exists!"))
+		return
+	}
+
+	err := h.authService.RegisterUser(ctx, req.Username, req.Email, req.Password)
 	if err != nil {
-		userDTO, getUserErr := h.authService.GetUserByUsername(ctx, req.Username)
-		if getUserErr != nil {
-			if !errors.Is(getUserErr, &appErr.LogicalError{}) {
-				slog.Error("Couldn't compensate register user action!", "error", err)
-				middleware.HandleError(w, r, getUserErr)
-				return
-			}
-		}
-		if userDTO.Username != "" {
-			if deleteErr := h.authService.DeleteUser(ctx, userDTO.Username); deleteErr != nil {
-				slog.Error("Couldn't compensate register user action! Deleted failed!", "error", err)
-				middleware.HandleError(w, r, deleteErr)
-				return
-			}
+		slog.Error("Could'nt register user! Try to compensate...", "email", req.Email, "error", err)
+		if deleteErr := h.authService.DeleteUser(ctx, req.Email); deleteErr != nil {
+			slog.Error("Couldn't compensate user!", "email", req.Email, "error", deleteErr)
+		} else {
+			slog.Info("User was compensated!", "email", req.Email)
 		}
 		middleware.HandleError(w, r, err)
 		return
 	}
 
+	token, err := h.authService.Login(ctx, req.Email, req.Password)
+	if err != nil {
+		middleware.HandleError(w, r, err)
+		return
+	}
 	tokenUserInfo, err := h.authService.GetTokenUserInfo(ctx, token.AccessToken)
 	if err != nil {
 		middleware.HandleError(w, r, appErr.NewTechnicalError(err, authHandlerCode, err.Error()))
@@ -93,7 +94,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		Roles:    tokenUserInfo.Roles,
 	}
 
-	w.WriteHeader(200)
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(loginResponse)
 }
 
@@ -141,7 +142,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Roles:    tokenUserInfo.Roles,
 	}
 
-	w.WriteHeader(200)
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(loginResponse)
 }
 
@@ -166,7 +167,7 @@ func (h *AuthHandler) GetRoles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(200)
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(roles)
 }
 
@@ -200,7 +201,7 @@ func (h *AuthHandler) GetUserRoles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(200)
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(roles)
 }
 
@@ -225,7 +226,7 @@ func (h *AuthHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(200)
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(users)
 }
 
@@ -253,13 +254,13 @@ func (h *AuthHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userDTO, err := h.authService.GetUserByUsername(ctx, username)
+	userDTO, err := h.authService.GetUserByEmail(ctx, username)
 	if err != nil {
 		middleware.HandleError(w, r, appErr.NewTechnicalError(err, authHandlerCode, err.Error()))
 		return
 	}
 
-	w.WriteHeader(200)
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(userDTO)
 }
 
@@ -292,7 +293,7 @@ func (h *AuthHandler) GetHeaderTokenInfo(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	w.WriteHeader(200)
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(tokenUserInfo)
 }
 
@@ -331,6 +332,6 @@ func (h *AuthHandler) GetBodyTokenInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(200)
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(tokenUserInfo)
 }

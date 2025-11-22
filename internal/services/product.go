@@ -31,14 +31,21 @@ type ProductService interface {
 type productService struct {
 	BaseServiceImpl[entities.Product]
 	productRepo repositories.ProductRepository
+
+	enumService      EnumService
+	enumValueService EnumValueService
 }
 
 func NewProductService(
 	productRepo repositories.ProductRepository,
+	enumService EnumService,
+	enumValueService EnumValueService,
 ) *productService {
 	return &productService{
-		BaseServiceImpl: *NewBaseServiceImpl(productRepo),
-		productRepo:     productRepo,
+		BaseServiceImpl:  *NewBaseServiceImpl(productRepo),
+		productRepo:      productRepo,
+		enumService:      enumService,
+		enumValueService: enumValueService,
 	}
 }
 
@@ -47,12 +54,12 @@ func (s *productService) Create(ctx context.Context, product entities.Product) (
 	criteriaByCodeAndSku := dto.SearchCriteria{
 		Limit: 1,
 		SearchConditions: []dto.SearchCondition{
-			dto.SearchCondition{
+			{
 				Field:     "CODE",
 				Operation: dto.OpEqual,
 				Value:     product.Code,
 			},
-			dto.SearchCondition{
+			{
 				Field:     "SKU",
 				Operation: dto.OpEqual,
 				Value:     product.Sku,

@@ -69,45 +69,41 @@ func NewKeycloakService(ctx context.Context, cfg *config.KeycloakConfig) (*keycl
 	}, nil
 }
 
-func (kc *keycloakService) RegisterUser(ctx context.Context, username, email, password string) (dto.JWT, error) {
-	user := gocloak.User{
-		Username: gocloak.StringP(username),
-		Email:    gocloak.StringP(email),
-		Enabled:  gocloak.BoolP(true),
+func (kc *keycloakService) RegisterUser(ctx context.Context, username, email, password string) error {
+	kcRole, err := kc.client.GetClientRole(ctx, kc.token.AccessToken, kc.cfg.Realm, kc.clientID, guestRole)
+	if err != nil {
+		slog.Error("Cannot find role!", "role", guestRole)
+		return appError.NewTechnicalError(err, keycloakAuthService, "No such role as 'guest'!")
 	}
+
+	var (
+		user = gocloak.User{
+			Username: gocloak.StringP(username),
+			Email:    gocloak.StringP(email),
+			Enabled:  gocloak.BoolP(true),
+		}
+	)
 
 	userID, err := kc.client.CreateUser(ctx, kc.token.AccessToken, kc.cfg.Realm, user)
 	if err != nil {
 		slog.Error("Error while creating user", "user", user, "error", err)
-		return dto.JWT{}, appError.NewTechnicalError(err, keycloakAuthService, err.Error())
+		return appError.NewTechnicalError(err, keycloakAuthService, err.Error())
 	}
 
 	err = kc.client.SetPassword(ctx, kc.token.AccessToken, userID, kc.cfg.Realm, password, false)
 	if err != nil {
 		slog.Error("Error setting password to user", "user", user, "error", err)
-		return dto.JWT{}, appError.NewTechnicalError(err, keycloakAuthService, err.Error())
-	}
-
-	kcRole, err := kc.client.GetClientRole(ctx, kc.token.AccessToken, kc.cfg.Realm, kc.clientID, guestRole)
-	if err != nil {
-		slog.Error("Cannot find role!", "role", guestRole, "userID", userID)
-		return dto.JWT{}, appError.NewTechnicalError(err, keycloakAuthService, "No such role as 'guest'!")
+		return appError.NewTechnicalError(err, keycloakAuthService, err.Error())
 	}
 
 	err = kc.client.AddClientRolesToUser(ctx, kc.token.AccessToken, kc.cfg.Realm, kc.clientID, userID, []gocloak.Role{*kcRole})
 	if err != nil {
 		slog.Error("Cannot set role!", "role", kcRole.Name, "userID", userID)
-		return dto.JWT{}, appError.NewTechnicalError(err, keycloakAuthService, "Cannot set role guest for user")
-	}
-
-	// GET ACCESS TOKEN FOR USER AND CHECK REGISTRATION PROCESS
-	jwt, err := kc.Login(ctx, username, password)
-	if err != nil {
-		return dto.JWT{}, err
+		return appError.NewTechnicalError(err, keycloakAuthService, "Cannot set role guest for user")
 	}
 
 	slog.Info("Register user", "user", user)
-	return jwt, nil
+	return nil
 }
 
 func (kc *keycloakService) Login(ctx context.Context, username, password string) (dto.JWT, error) {
@@ -153,7 +149,7 @@ func (kc *keycloakService) GetRoles(ctx context.Context) ([]string, error) {
 }
 
 func (kc *keycloakService) GetRolesByUser(ctx context.Context, username string) ([]string, error) {
-	userDTO, err := kc.GetUserByUsername(ctx, username)
+	userDTO, err := kc.GetUserByEmail(ctx, username)
 	if err != nil {
 		return nil, err
 	}
@@ -266,18 +262,18 @@ func (kc *keycloakService) GetUsers(ctx context.Context) ([]dto.UserDTO, error) 
 	return users, nil
 }
 
-func (kc *keycloakService) GetUserByUsername(ctx context.Context, username string) (dto.UserDTO, error) {
+func (kc *keycloakService) GetUserByEmail(ctx context.Context, email string) (dto.UserDTO, error) {
 	params := gocloak.GetUsersParams{
-		Username: &username,
+		Email: &email,
 	}
 	// always return 1 element
 	kcUsers, err := kc.client.GetUsers(ctx, kc.token.AccessToken, kc.cfg.Realm, params)
 	if err != nil {
-		slog.Error("Couldn't find user by", "username", username, "error", err)
+		slog.Error("Couldn't find user by", "email", email, "error", err)
 		return dto.UserDTO{}, appError.NewTechnicalError(err, keycloakAuthService, err.Error())
 	}
 	if len(kcUsers) == 0 {
-		slog.Error("User doesn't exist!", "username", username)
+		slog.Error("User doesn't exist!", "email", email)
 		return dto.UserDTO{}, appError.NewLogicalError(err, keycloakAuthService, "Couldn't find user by this username")
 	}
 
@@ -291,17 +287,17 @@ func (kc *keycloakService) GetUserByUsername(ctx context.Context, username strin
 	return userDTO, nil
 }
 
-func (kc *keycloakService) DeleteUser(ctx context.Context, username string) error {
-	userDTO, err := kc.GetUserByUsername(ctx, username)
+func (kc *keycloakService) DeleteUser(ctx context.Context, email string) error {
+	userDTO, err := kc.GetUserByEmail(ctx, email)
 	if err != nil {
 		return err
 	}
 
 	err = kc.client.DeleteUser(ctx, kc.token.AccessToken, kc.cfg.Realm, userDTO.ID)
 	if err != nil {
-		slog.Error("Error while deleteting user", "username", username, "error", err)
+		slog.Error("Error while deleteting user", "email", email, "error", err)
 		return appError.NewTechnicalError(err, keycloakAuthService, err.Error())
 	}
-	slog.Info("User deleted", "username", username)
+	slog.Info("User deleted", "email", email)
 	return nil
 }

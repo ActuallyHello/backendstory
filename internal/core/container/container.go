@@ -30,6 +30,8 @@ type AppContainer struct {
 	categoryRepo     repositories.CategoryRepository
 	productRepo      repositories.ProductRepository
 	productMediaRepo repositories.ProductMediaRepository
+	cartRepo         repositories.CartRepository
+	cartItemRepo     repositories.CartItemRepository
 
 	// services
 	enumService         services.EnumService
@@ -38,6 +40,8 @@ type AppContainer struct {
 	categoryService     services.CategoryService
 	productService      services.ProductService
 	productMediaService services.ProductMediaService
+	cartService         services.CartService
+	cartItemService     services.CartItemService
 
 	// resources
 	fileService resources.FileService
@@ -50,6 +54,8 @@ type AppContainer struct {
 	categoryHandler     *handlers.CategoryHandler
 	productHandler      *handlers.ProductHandler
 	productMediaHandler *handlers.ProductMediaHandler
+	cartHandler         *handlers.CartHandler
+	cartItemHandler     *handlers.CartItemHandler
 
 	// auth
 	authService auth.AuthService
@@ -74,14 +80,18 @@ func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
 	categoryRepo := repositories.NewCategoryRepository(db)
 	productRepo := repositories.NewProductRepository(db)
 	productMediaRepo := repositories.NewProductMediaRepository(db)
+	cartRepo := repositories.NewCartRepository(db)
+	cartItemRepo := repositories.NewCartItemRepository(db)
 
 	// services
 	enumService := services.NewEnumService(enumRepo)
 	enumValueService := services.NewEnumValueService(enumValueRepo)
 	personService := services.NewPersonService(personRepo)
 	categoryService := services.NewCategoryService(categoryRepo)
-	productService := services.NewProductService(productRepo)
+	productService := services.NewProductService(productRepo, enumService, enumValueService)
 	productMediaService := services.NewProductMediaService(productMediaRepo)
+	cartServices := services.NewCartService(cartRepo)
+	cartItemServices := services.NewCartItemService(cartItemRepo, enumService, enumValueService)
 
 	// auth
 	keycloakService, err := auth.NewKeycloakService(ctx, appConfig.KeycloakConfig)
@@ -96,7 +106,9 @@ func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
 	personHandler := handlers.NewPersonHandler(personService)
 	authHandler := handlers.NewAuthHandler(keycloakService)
 	categoryHandler := handlers.NewCategoryHandler(categoryService)
-	productHandler := handlers.NewProductHandler(productService)
+	productHandler := handlers.NewProductHandler(productService, enumValueService, categoryService)
+	cartHandler := handlers.NewCartHandler(cartServices)
+	cartItemHandler := handlers.NewCartItemHandler(cartItemServices)
 
 	// refactor
 	productMediaHandler := handlers.NewProductMediaHandler(productMediaService, productService, resources.FileService{}, "static/media")
@@ -115,6 +127,8 @@ func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
 		categoryRepo:     categoryRepo,
 		productRepo:      productRepo,
 		productMediaRepo: productMediaRepo,
+		cartRepo:         cartRepo,
+		cartItemRepo:     cartItemRepo,
 
 		// services
 		enumService:         enumService,
@@ -123,6 +137,8 @@ func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
 		categoryService:     categoryService,
 		productService:      productService,
 		productMediaService: productMediaService,
+		cartService:         cartServices,
+		cartItemService:     cartItemServices,
 
 		fileService: resources.FileService{},
 
@@ -134,6 +150,8 @@ func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
 		categoryHandler:     categoryHandler,
 		productHandler:      productHandler,
 		productMediaHandler: productMediaHandler,
+		cartHandler:         cartHandler,
+		cartItemHandler:     cartItemHandler,
 
 		// auth
 		authService: keycloakService,
@@ -185,6 +203,14 @@ func (c *AppContainer) GetProductMediaRepository() repositories.ProductMediaRepo
 	return c.productMediaRepo
 }
 
+func (c *AppContainer) GetCartRepository() repositories.CartRepository {
+	return c.cartRepo
+}
+
+func (c *AppContainer) GetCartItemRepository() repositories.CartItemRepository {
+	return c.cartItemRepo
+}
+
 // Services
 func (c *AppContainer) GetEnumService() services.EnumService {
 	return c.enumService
@@ -208,6 +234,14 @@ func (c *AppContainer) GetProductService() services.ProductService {
 
 func (c *AppContainer) GetProductMediaService() services.ProductMediaService {
 	return c.productMediaService
+}
+
+func (c *AppContainer) GetCartService() services.CartService {
+	return c.cartService
+}
+
+func (c *AppContainer) GetCartItemService() services.CartItemService {
+	return c.cartItemService
 }
 
 func (c *AppContainer) GetFileService() resources.FileService {
@@ -241,6 +275,14 @@ func (c *AppContainer) GetProductHandler() *handlers.ProductHandler {
 
 func (c *AppContainer) GetProductMediaHandler() *handlers.ProductMediaHandler {
 	return c.productMediaHandler
+}
+
+func (c *AppContainer) GetCartHandler() *handlers.CartHandler {
+	return c.cartHandler
+}
+
+func (c *AppContainer) GetCartItemHandler() *handlers.CartItemHandler {
+	return c.cartItemHandler
 }
 
 // Auth
