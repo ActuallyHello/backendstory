@@ -32,6 +32,21 @@ func NewCartHandler(
 	}
 }
 
+// Create создает новую корзину
+// @Summary Создать корзину
+// @Description Создает новую корзину для пользователя
+// @Tags Carts
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body dto.CartCreateRequest true "Данные для создания корзины"
+// @Success 201 {object} dto.CartDTO "Созданная корзина"
+// @Failure 400 {object} dto.ErrorResponse "Ошибка валидации"
+// @Failure 401 {object} dto.ErrorResponse "Не авторизован"
+// @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
+// @Failure 409 {object} dto.ErrorResponse "Корзина для пользователя уже существует"
+// @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /api/v1/carts [post]
 func (h *CartHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -59,6 +74,21 @@ func (h *CartHandler) Create(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(dto.ToCartDTO(cart))
 }
 
+// GetById возвращает корзину по ID
+// @Summary Получить корзину по ID
+// @Description Возвращает корзину по указанному идентификатору
+// @Tags Carts
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "ID корзины"
+// @Success 200 {object} dto.CartDTO "Корзина"
+// @Failure 400 {object} dto.ErrorResponse "Неверный ID"
+// @Failure 401 {object} dto.ErrorResponse "Не авторизован"
+// @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} dto.ErrorResponse "Корзина не найдена"
+// @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /api/v1/carts/{id} [get]
 func (h *CartHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -83,6 +113,20 @@ func (h *CartHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(dto.ToCartDTO(cart))
 }
 
+// GetWithSearchCriteria выполняет поиск корзин по критериям
+// @Summary Поиск корзин
+// @Description Выполняет поиск корзин по заданным критериям
+// @Tags Carts
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body dto.SearchCriteria true "Критерии поиска"
+// @Success 200 {array} dto.CartDTO "Список найденных корзин"
+// @Failure 400 {object} dto.ErrorResponse "Ошибка валидации"
+// @Failure 401 {object} dto.ErrorResponse "Не авторизован"
+// @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
+// @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /api/v1/carts/search [post]
 func (h *CartHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -112,6 +156,21 @@ func (h *CartHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Reque
 	json.NewEncoder(w).Encode(dtos)
 }
 
+// GetByPersonID возвращает корзину по ID пользователя
+// @Summary Получить корзину по ID пользователя
+// @Description Возвращает корзину по указанному идентификатору пользователя
+// @Tags Carts
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param person_id path int true "ID пользователя"
+// @Success 200 {object} dto.CartDTO "Корзина"
+// @Failure 400 {object} dto.ErrorResponse "Неверный ID пользователя"
+// @Failure 401 {object} dto.ErrorResponse "Не авторизован"
+// @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} dto.ErrorResponse "Корзина не найдена"
+// @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /api/v1/carts/person/{person_id} [get]
 func (h *CartHandler) GetByPersonID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

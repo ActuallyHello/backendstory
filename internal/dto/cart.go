@@ -6,10 +6,14 @@ import (
 	"github.com/ActuallyHello/backendstory/internal/store/entities"
 )
 
+// CartCreateRequest represents request for creating cart
+// @Name CartCreateRequest
 type CartCreateRequest struct {
-	PersonID uint `json:"person_id" validate:"required,min=1,max=50"`
+	PersonID uint `json:"person_id" validate:"required,min=1"`
 }
 
+// CartDTO represents cart data transfer object
+// @Name CartDTO
 type CartDTO struct {
 	ID        uint      `json:"id"`
 	CreatedAt time.Time `json:"created_at"`

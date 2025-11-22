@@ -42,6 +42,8 @@ func SetupRouter(container *container.AppContainer, staticFilesPath string) http
 		registerCategoryRoutes(r, container.GetAuthService(), container.GetCategoryHandler())
 		registerProductRoutes(r, container.GetAuthService(), container.GetProductHandler())
 		registerProductMediaRoutes(r, container.GetAuthService(), container.GetProductMediaHandler())
+		registerCartRoutes(r, container.GetAuthService(), container.GetCartHandler())
+		registerCartItemRoutes(r, container.GetAuthService(), container.GetCartItemHandler())
 	})
 
 	r.Get("/swagger/doc.json", func(w http.ResponseWriter, r *http.Request) {
@@ -171,6 +173,30 @@ func registerProductMediaRoutes(r chi.Router, authService auth.AuthService, prod
 
 		// Удаление изображения
 		r.Delete("/{id}", productMediaHandler.Delete)
+	})
+}
+
+func registerCartRoutes(r chi.Router, authService auth.AuthService, cartHandler *handlers.CartHandler) {
+	r.Route("/carts", func(r chi.Router) {
+		r.Use(appMiddleware.AuthMiddleware(authService, "admin", "guest"))
+
+		r.Get("/{id}", cartHandler.GetById)
+		r.Get("/person/{person_id}", cartHandler.GetByPersonID)
+		r.Post("/search", cartHandler.GetWithSearchCriteria)
+
+		r.Post("/", cartHandler.Create)
+	})
+}
+
+func registerCartItemRoutes(r chi.Router, authService auth.AuthService, cartItemHandler *handlers.CartItemHandler) {
+	r.Route("/cart-items", func(r chi.Router) {
+		r.Use(appMiddleware.AuthMiddleware(authService, "admin", "guest"))
+
+		r.Get("/{id}", cartItemHandler.GetById)
+		r.Get("/cart/{cart_id}", cartItemHandler.GetByCartID)
+		r.Post("/search", cartItemHandler.GetWithSearchCriteria)
+
+		r.Post("/", cartItemHandler.Create)
 	})
 }
 

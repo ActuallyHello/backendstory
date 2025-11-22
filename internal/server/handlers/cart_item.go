@@ -32,6 +32,21 @@ func NewCartItemHandler(
 	}
 }
 
+// Create создает новый элемент корзины
+// @Summary Создать элемент корзины
+// @Description Создает новый элемент корзины
+// @Tags CartItems
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body dto.CartItemCreateRequest true "Данные для создания элемента корзины"
+// @Success 201 {object} dto.CartItemDTO "Созданный элемент корзины"
+// @Failure 400 {object} dto.ErrorResponse "Ошибка валидации"
+// @Failure 401 {object} dto.ErrorResponse "Не авторизован"
+// @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
+// @Failure 409 {object} dto.ErrorResponse "Элемент корзины уже существует"
+// @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /api/v1/cart-items [post]
 func (h *CartItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -60,6 +75,21 @@ func (h *CartItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(dto.ToCartItemDTO(cartItem))
 }
 
+// GetById возвращает элемент корзины по ID
+// @Summary Получить элемент корзины по ID
+// @Description Возвращает элемент корзины по указанному идентификатору
+// @Tags CartItems
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "ID элемента корзины"
+// @Success 200 {object} dto.CartItemDTO "Элемент корзины"
+// @Failure 400 {object} dto.ErrorResponse "Неверный ID"
+// @Failure 401 {object} dto.ErrorResponse "Не авторизован"
+// @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} dto.ErrorResponse "Элемент корзины не найден"
+// @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /api/v1/cart-items/{id} [get]
 func (h *CartItemHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -84,6 +114,20 @@ func (h *CartItemHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(dto.ToCartItemDTO(cartItem))
 }
 
+// GetWithSearchCriteria выполняет поиск элементов корзины по критериям
+// @Summary Поиск элементов корзины
+// @Description Выполняет поиск элементов корзины по заданным критериям
+// @Tags CartItems
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body dto.SearchCriteria true "Критерии поиска"
+// @Success 200 {array} dto.CartItemDTO "Список найденных элементов корзины"
+// @Failure 400 {object} dto.ErrorResponse "Ошибка валидации"
+// @Failure 401 {object} dto.ErrorResponse "Не авторизован"
+// @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
+// @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /api/v1/cart-items/search [post]
 func (h *CartItemHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -113,10 +157,25 @@ func (h *CartItemHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.R
 	json.NewEncoder(w).Encode(dtos)
 }
 
-func (h *CartItemHandler) GetByPersonID(w http.ResponseWriter, r *http.Request) {
+// GetByCartID возвращает элементы корзины по ID корзины
+// @Summary Получить элементы корзины по ID корзины
+// @Description Возвращает все элементы корзины по указанному идентификатору корзины
+// @Tags CartItems
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param cart_id path int true "ID корзины"
+// @Success 200 {array} dto.CartItemDTO "Список элементов корзины"
+// @Failure 400 {object} dto.ErrorResponse "Неверный ID корзины"
+// @Failure 401 {object} dto.ErrorResponse "Не авторизован"
+// @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} dto.ErrorResponse "Элементы корзины не найдены"
+// @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /api/v1/cart-items/cart/{cart_id} [get]
+func (h *CartItemHandler) GetByCartID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	reqID := r.PathValue("person_id")
+	reqID := r.PathValue("cart_id")
 	if reqID == "" {
 		middleware.HandleError(w, r, appErr.NewLogicalError(nil, cartItemHandlerCode, "ID parameter missing"))
 		return
@@ -133,7 +192,7 @@ func (h *CartItemHandler) GetByPersonID(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	dtos := make([]dto.CartItemDTO, len(cartItems))
+	dtos := make([]dto.CartItemDTO, 0, len(cartItems))
 	for _, cartItem := range cartItems {
 		dtos = append(dtos, dto.ToCartItemDTO(cartItem))
 	}
