@@ -42,6 +42,7 @@ type AppContainer struct {
 	productMediaService services.ProductMediaService
 	cartService         services.CartService
 	cartItemService     services.CartItemService
+	purchaseService     services.PurchaseService
 
 	// resources
 	fileService resources.FileService
@@ -56,6 +57,7 @@ type AppContainer struct {
 	productMediaHandler *handlers.ProductMediaHandler
 	cartHandler         *handlers.CartHandler
 	cartItemHandler     *handlers.CartItemHandler
+	purchaseHandler     *handlers.PurchaseHandler
 
 	// auth
 	authService auth.AuthService
@@ -92,6 +94,7 @@ func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
 	productMediaService := services.NewProductMediaService(productMediaRepo)
 	cartServices := services.NewCartService(cartRepo)
 	cartItemServices := services.NewCartItemService(cartItemRepo, enumService, enumValueService)
+	purchaseService := services.NewPurchaseService(cartServices, cartItemServices, productService, enumService, enumValueService)
 
 	// auth
 	keycloakService, err := auth.NewKeycloakService(ctx, appConfig.KeycloakConfig)
@@ -109,6 +112,7 @@ func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
 	productHandler := handlers.NewProductHandler(productService, enumValueService, categoryService)
 	cartHandler := handlers.NewCartHandler(cartServices)
 	cartItemHandler := handlers.NewCartItemHandler(cartItemServices)
+	purchaseHandler := handlers.NewPurchaseHandler(purchaseService)
 
 	// refactor
 	productMediaHandler := handlers.NewProductMediaHandler(productMediaService, productService, resources.FileService{}, "static/media")
@@ -139,6 +143,7 @@ func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
 		productMediaService: productMediaService,
 		cartService:         cartServices,
 		cartItemService:     cartItemServices,
+		purchaseService:     purchaseService,
 
 		fileService: resources.FileService{},
 
@@ -152,6 +157,7 @@ func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
 		productMediaHandler: productMediaHandler,
 		cartHandler:         cartHandler,
 		cartItemHandler:     cartItemHandler,
+		purchaseHandler:     purchaseHandler,
 
 		// auth
 		authService: keycloakService,
@@ -244,6 +250,10 @@ func (c *AppContainer) GetCartItemService() services.CartItemService {
 	return c.cartItemService
 }
 
+func (c *AppContainer) GetPurchaseService() services.PurchaseService {
+	return c.purchaseService
+}
+
 func (c *AppContainer) GetFileService() resources.FileService {
 	return c.fileService
 }
@@ -283,6 +293,10 @@ func (c *AppContainer) GetCartHandler() *handlers.CartHandler {
 
 func (c *AppContainer) GetCartItemHandler() *handlers.CartItemHandler {
 	return c.cartItemHandler
+}
+
+func (c *AppContainer) GetPurchaseHandler() *handlers.PurchaseHandler {
+	return c.purchaseHandler
 }
 
 // Auth

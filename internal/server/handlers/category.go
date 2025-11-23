@@ -48,6 +48,7 @@ func NewCategoryHandler(
 // @Failure 409 {object} dto.ErrorResponse "Категория с таким кодом уже существует"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /api/v1/categories [post]
+// @OperationId createCategory
 func (h *CategoryHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -97,6 +98,7 @@ func (h *CategoryHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /api/v1/categories [get]
+// @OperationId getCategoriesAll
 func (h *CategoryHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -130,6 +132,7 @@ func (h *CategoryHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} dto.ErrorResponse "Категория не найдена"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /api/v1/categories/{id} [get]
+// @OperationId getCategoryById
 func (h *CategoryHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -169,6 +172,7 @@ func (h *CategoryHandler) GetById(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} dto.ErrorResponse "Категория не найдена"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /api/v1/categories/code/{code} [get]
+// @OperationId getCategoryByCode
 func (h *CategoryHandler) GetByCode(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -202,6 +206,7 @@ func (h *CategoryHandler) GetByCode(w http.ResponseWriter, r *http.Request) {
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /api/v1/categories/search [post]
+// @OperationId searchCategory
 func (h *CategoryHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -246,6 +251,7 @@ func (h *CategoryHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.R
 // @Failure 404 {object} dto.ErrorResponse "Категория не найдена"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /api/v1/categories/{id} [delete]
+// @OperationId deleteCategory
 func (h *CategoryHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -289,6 +295,7 @@ func (h *CategoryHandler) Delete(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} dto.ErrorResponse "Категория не найдена"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /api/v1/categories/category/{category_id} [get]
+// @OperationId getCategoryByCategoryId
 func (h *CategoryHandler) GetByCategoryID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

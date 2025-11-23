@@ -45,6 +45,7 @@ func NewAuthHandler(
 // @Failure 409 {object} dto.ErrorResponse "Пользователь уже существует"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /register [post]
+// @OperationId registerUser
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -110,6 +111,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 // @Failure 401 {object} dto.ErrorResponse "Неверные учетные данные"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /login [post]
+// @OperationId loginUser
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -158,6 +160,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /auth/roles [get]
+// @OperationId getRoles
 func (h *AuthHandler) GetRoles(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -186,6 +189,7 @@ func (h *AuthHandler) GetRoles(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} dto.ErrorResponse "Пользователь не найден"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /auth/users/{username}/roles [get]
+// @OperationId getUserRoles
 func (h *AuthHandler) GetUserRoles(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -217,6 +221,7 @@ func (h *AuthHandler) GetUserRoles(w http.ResponseWriter, r *http.Request) {
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /auth/users [get]
+// @OperationId getUsers
 func (h *AuthHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -245,6 +250,7 @@ func (h *AuthHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} dto.ErrorResponse "Пользователь не найден"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /auth/users/{username} [get]
+// @OperationId getUser
 func (h *AuthHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -277,6 +283,7 @@ func (h *AuthHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /auth/token [get]
+// @OperationId getHeaderTokenInfo
 func (h *AuthHandler) GetHeaderTokenInfo(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -311,6 +318,7 @@ func (h *AuthHandler) GetHeaderTokenInfo(w http.ResponseWriter, r *http.Request)
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /auth/token [post]
+// @OperationId getBodyTokenInfo
 func (h *AuthHandler) GetBodyTokenInfo(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

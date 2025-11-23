@@ -11,6 +11,7 @@ import (
 type CartItemCreateRequest struct {
 	ProductID uint `json:"product_id" validate:"required,min=1"`
 	CartID    uint `json:"cart_id" validate:"required,min=1"`
+	Quantity  uint `json:"quantity" validate:"required,min=1"`
 }
 
 // CartItemDTO represents cart item data transfer object
@@ -21,6 +22,7 @@ type CartItemDTO struct {
 	UpdatedAt time.Time `json:"updated_at"`
 	ProductID uint      `json:"product_id"`
 	CartID    uint      `json:"cart_id"`
+	Quantity  uint      `json:"quantity"`
 }
 
 func ToCartItemDTO(cartItem entities.CartItem) CartItemDTO {
@@ -30,5 +32,6 @@ func ToCartItemDTO(cartItem entities.CartItem) CartItemDTO {
 		UpdatedAt: cartItem.UpdatedAt,
 		ProductID: cartItem.ProductID,
 		CartID:    cartItem.CartID,
+		Quantity:  cartItem.Quantity,
 	}
 }

@@ -46,6 +46,7 @@ func NewEnumValueHandler(
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /enumeration-values [post]
+// @OperationId createEnumValue
 func (h *EnumValueHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -87,6 +88,7 @@ func (h *EnumValueHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /enumeration-values [get]
+// @OperationId getEnumValueAll
 func (h *EnumValueHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -120,6 +122,7 @@ func (h *EnumValueHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} dto.ErrorResponse "Значение перечисления не найдено"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /enumeration-values/{id} [get]
+// @OperationId getEnumValueById
 func (h *EnumValueHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -158,6 +161,7 @@ func (h *EnumValueHandler) GetById(w http.ResponseWriter, r *http.Request) {
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /enumeration-values/enumeration/{enumeration_id} [get]
+// @OperationId getEnumValueByEnumId
 func (h *EnumValueHandler) GetByEnumId(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -202,6 +206,7 @@ func (h *EnumValueHandler) GetByEnumId(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} dto.ErrorResponse "Значение перечисления не найдено"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /enumeration-values/{id} [delete]
+// @OperationId deleteEnumValue
 func (h *EnumValueHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -244,6 +249,7 @@ func (h *EnumValueHandler) Delete(w http.ResponseWriter, r *http.Request) {
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /enumeration-values/search [post]
+// @OperationId searchEnumValue
 func (h *EnumValueHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

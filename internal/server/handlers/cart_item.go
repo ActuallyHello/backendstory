@@ -47,6 +47,7 @@ func NewCartItemHandler(
 // @Failure 409 {object} dto.ErrorResponse "Элемент корзины уже существует"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /api/v1/cart-items [post]
+// @OperationId createCartItem
 func (h *CartItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -90,6 +91,7 @@ func (h *CartItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} dto.ErrorResponse "Элемент корзины не найден"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /api/v1/cart-items/{id} [get]
+// @OperationId getCartItemById
 func (h *CartItemHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -128,6 +130,7 @@ func (h *CartItemHandler) GetById(w http.ResponseWriter, r *http.Request) {
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /api/v1/cart-items/search [post]
+// @OperationId searchCartItem
 func (h *CartItemHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -172,6 +175,7 @@ func (h *CartItemHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.R
 // @Failure 404 {object} dto.ErrorResponse "Элементы корзины не найдены"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /api/v1/cart-items/cart/{cart_id} [get]
+// @OperationId getCartItemByCartId
 func (h *CartItemHandler) GetByCartID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

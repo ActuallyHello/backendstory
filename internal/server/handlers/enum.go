@@ -47,6 +47,7 @@ func NewEnumHandler(
 // @Failure 409 {object} dto.ErrorResponse "Перечисление с таким кодом уже существует"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /enumerations [post]
+// @OperationId createEnumValue
 func (h *EnumHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -87,6 +88,7 @@ func (h *EnumHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /enumerations [get]
+// @OperationId getEnumAll
 func (h *EnumHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -120,6 +122,7 @@ func (h *EnumHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} dto.ErrorResponse "Перечисление не найдено"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /enumerations/{id} [get]
+// @OperationId getEnumById
 func (h *EnumHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -159,6 +162,7 @@ func (h *EnumHandler) GetById(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} dto.ErrorResponse "Перечисление не найдено"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /enumerations/code/{code} [get]
+// @OperationId getEnumByCode
 func (h *EnumHandler) GetByCode(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -192,6 +196,7 @@ func (h *EnumHandler) GetByCode(w http.ResponseWriter, r *http.Request) {
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /enumerations/search [post]
+// @OperationId searchEnum
 func (h *EnumHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -236,6 +241,7 @@ func (h *EnumHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Reque
 // @Failure 404 {object} dto.ErrorResponse "Перечисление не найдено"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /enumerations/{id} [delete]
+// @OperationId deleteEnum
 func (h *EnumHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

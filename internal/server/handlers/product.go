@@ -54,6 +54,7 @@ func NewProductHandler(
 // @Failure 409 {object} dto.ErrorResponse "Продукт с таким кодом уже существует"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /api/v1/products [post]
+// @OperationId createProduct
 func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -116,6 +117,7 @@ func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /api/v1/products [get]
+// @OperationId getProductAll
 func (h *ProductHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -149,6 +151,7 @@ func (h *ProductHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} dto.ErrorResponse "Продукт не найден"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /api/v1/products/{id} [get]
+// @OperationId getProductById
 func (h *ProductHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -188,6 +191,7 @@ func (h *ProductHandler) GetById(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} dto.ErrorResponse "Продукт не найден"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /api/v1/products/code/{code} [get]
+// @OperationId getProductByCode
 func (h *ProductHandler) GetByCode(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -221,6 +225,7 @@ func (h *ProductHandler) GetByCode(w http.ResponseWriter, r *http.Request) {
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /api/v1/products/search [post]
+// @OperationId searchProduct
 func (h *ProductHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -265,6 +270,7 @@ func (h *ProductHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Re
 // @Failure 404 {object} dto.ErrorResponse "Продукт не найден"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /api/v1/products/{id} [delete]
+// @OperationId deleteProduct
 func (h *ProductHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -308,6 +314,7 @@ func (h *ProductHandler) Delete(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} dto.ErrorResponse "Продукты не найдены"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /api/v1/products/category/{category_id} [get]
+// @OperationId getProductByCategoryId
 func (h *ProductHandler) GetByCategoryID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

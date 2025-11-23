@@ -20,8 +20,8 @@ const (
 type SearchCriteria struct {
 	Limit            int               `json:"limit" validate:"required,gte=0"`
 	Offset           *int              `json:"offset" validate:"omitempty,gte=0"`
-	OrderBy          *string           `json:"order_by"`
-	SearchConditions []SearchCondition `json:"search_conditions"`
+	OrderBy          *string           `json:"order_by" validate:"omitempty,min=1,max=50"`
+	SearchConditions []SearchCondition `json:"search_conditions" validate:"omitempty,dive"`
 }
 
 // SearchCondition represents a single search condition

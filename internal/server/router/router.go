@@ -44,6 +44,7 @@ func SetupRouter(container *container.AppContainer, staticFilesPath string) http
 		registerProductMediaRoutes(r, container.GetAuthService(), container.GetProductMediaHandler())
 		registerCartRoutes(r, container.GetAuthService(), container.GetCartHandler())
 		registerCartItemRoutes(r, container.GetAuthService(), container.GetCartItemHandler())
+		registerPurchaseRoutes(r, container.GetAuthService(), container.GetPurchaseHandler())
 	})
 
 	r.Get("/swagger/doc.json", func(w http.ResponseWriter, r *http.Request) {
@@ -73,8 +74,13 @@ func registerEnumRoutes(r chi.Router, authService auth.AuthService, enumHandler 
 		r.Get("/code/{code}", enumHandler.GetByCode)
 		r.Post("/search", enumHandler.GetWithSearchCriteria)
 
-		r.Post("/", enumHandler.Create)
-		r.Delete(byId, enumHandler.Delete)
+		// Защищенные маршруты (требуют аутентификации)
+		r.Group(func(r chi.Router) {
+			r.Use(appMiddleware.AuthMiddleware(authService, "admin", "guest"))
+
+			r.Post("/", enumHandler.Create)
+			r.Delete(byId, enumHandler.Delete)
+		})
 	})
 }
 
@@ -87,8 +93,13 @@ func registerEnumValuesRoutes(r chi.Router, authService auth.AuthService, enumVa
 		r.Get("/enumeration/{enumeration_id}", enumValueHandler.GetByEnumId)
 		r.Post("/search", enumValueHandler.GetWithSearchCriteria)
 
-		r.Post("/", enumValueHandler.Create)
-		r.Delete(byId, enumValueHandler.Delete)
+		// Защищенные маршруты (требуют аутентификации)
+		r.Group(func(r chi.Router) {
+			r.Use(appMiddleware.AuthMiddleware(authService, "admin", "guest"))
+
+			r.Post("/", enumValueHandler.Create)
+			r.Delete(byId, enumValueHandler.Delete)
+		})
 	})
 }
 
@@ -122,7 +133,6 @@ func registerAuthRoutes(r chi.Router, authService auth.AuthService, authHandler 
 
 func registerCategoryRoutes(r chi.Router, authService auth.AuthService, categoryHandler *handlers.CategoryHandler) {
 	r.Route("/categories", func(r chi.Router) {
-		r.Use(appMiddleware.AuthMiddleware(authService, "admin", "guest"))
 
 		r.Get("/", categoryHandler.GetAll)
 		r.Get("/{id}", categoryHandler.GetById)
@@ -130,8 +140,13 @@ func registerCategoryRoutes(r chi.Router, authService auth.AuthService, category
 		r.Get("/category/{category_id}", categoryHandler.GetByCategoryID)
 		r.Post("/search", categoryHandler.GetWithSearchCriteria)
 
-		r.Post("/", categoryHandler.Create)
-		r.Delete("/{id}", categoryHandler.Delete)
+		// Защищенные маршруты (требуют аутентификации)
+		r.Group(func(r chi.Router) {
+			r.Use(appMiddleware.AuthMiddleware(authService, "admin", "guest"))
+
+			r.Post("/", categoryHandler.Create)
+			r.Delete("/{id}", categoryHandler.Delete)
+		})
 	})
 }
 
@@ -145,8 +160,14 @@ func registerProductRoutes(r chi.Router, authService auth.AuthService, productHa
 		r.Get("/category/{category_id}", productHandler.GetByCategoryID)
 		r.Post("/search", productHandler.GetWithSearchCriteria)
 
-		r.Post("/", productHandler.Create)
-		r.Delete("/{id}", productHandler.Delete)
+		// Защищенные маршруты (требуют аутентификации)
+		r.Group(func(r chi.Router) {
+			r.Use(appMiddleware.AuthMiddleware(authService, "admin", "guest"))
+
+			r.Post("/", productHandler.Create)
+			r.Delete("/{id}", productHandler.Delete)
+		})
+
 	})
 }
 
@@ -197,6 +218,15 @@ func registerCartItemRoutes(r chi.Router, authService auth.AuthService, cartItem
 		r.Post("/search", cartItemHandler.GetWithSearchCriteria)
 
 		r.Post("/", cartItemHandler.Create)
+	})
+}
+
+func registerPurchaseRoutes(r chi.Router, authService auth.AuthService, purchaseHandler *handlers.PurchaseHandler) {
+	r.Route("/purchase", func(r chi.Router) {
+		r.Use(appMiddleware.AuthMiddleware(authService, "admin", "guest"))
+
+		r.Post("/add-to-cart", purchaseHandler.AddToCart)
+		r.Post("/purchase", purchaseHandler.Purchase)
 	})
 }
 

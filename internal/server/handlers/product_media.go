@@ -66,6 +66,7 @@ func NewProductMediaHandler(
 // @Failure 415 {object} dto.ErrorResponse "Неподдерживаемый тип файла"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /api/v1/product-media/upload [post]
+// @OperationId uploadProductMediaImage
 func (h *ProductMediaHandler) UploadImage(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -138,6 +139,7 @@ func (h *ProductMediaHandler) UploadImage(w http.ResponseWriter, r *http.Request
 // @Failure 404 {object} dto.ErrorResponse "Товар не найден"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /api/v1/product-media/product/{product_id} [get]
+// @OperationId getProductMediaByProductId
 func (h *ProductMediaHandler) GetByProductID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -190,6 +192,7 @@ func (h *ProductMediaHandler) GetByProductID(w http.ResponseWriter, r *http.Requ
 // @Failure 404 {object} dto.ErrorResponse "Изображение не найдено"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /api/v1/product-media/{id} [delete]
+// @OperationId deleteProductMedia
 func (h *ProductMediaHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

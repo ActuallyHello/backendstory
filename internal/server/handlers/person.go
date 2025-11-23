@@ -47,6 +47,7 @@ func NewPersonHandler(
 // @Failure 409 {object} dto.ErrorResponse "Персона с таким user_login уже существует"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /persons [post]
+// @OperationId createPerson
 func (h *PersonHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -89,6 +90,7 @@ func (h *PersonHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /persons [get]
+// @OperationId getPersonAll
 func (h *PersonHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -122,6 +124,7 @@ func (h *PersonHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} dto.ErrorResponse "Персона не найдена"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /persons/{id} [get]
+// @OperationId getPersonById
 func (h *PersonHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -161,6 +164,7 @@ func (h *PersonHandler) GetById(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} dto.ErrorResponse "Персона не найдена"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /persons/user/{user_login} [get]
+// @OperationId getPersonByUserLogin
 func (h *PersonHandler) GetByUserLogin(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -196,6 +200,7 @@ func (h *PersonHandler) GetByUserLogin(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} dto.ErrorResponse "Персона не найдена"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /persons/{id} [delete]
+// @OperationId deletePerson
 func (h *PersonHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -250,6 +255,7 @@ func (h *PersonHandler) Delete(w http.ResponseWriter, r *http.Request) {
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /persons/search [post]
+// @OperationId searchPerson
 func (h *PersonHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
