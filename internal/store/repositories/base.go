@@ -82,7 +82,8 @@ func (r *BaseRepositoryImpl[T]) FindWithSearchCriteria(ctx context.Context, crit
 	var entities []T
 	q := r.db.WithContext(ctx)
 	queryCtx := common.BuildQuery(q, criteria)
-	if err := queryCtx.Find(&entities).Error; err != nil {
+
+	if err := queryCtx.Debug().Find(&entities).Error; err != nil {
 		return nil, err
 	}
 	return entities, nil

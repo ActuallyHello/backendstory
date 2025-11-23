@@ -8,22 +8,38 @@ import (
 )
 
 func BuildQuery(queryCtx *gorm.DB, criteria dto.SearchCriteria) *gorm.DB {
-	if criteria.SearchConditions != nil {
-		for _, condition := range criteria.SearchConditions {
-			queryCtx = applyCondition(queryCtx, condition)
+	return queryCtx.
+		Scopes(applySearchConditions(criteria.SearchConditions)).
+		Scopes(applyPagination(criteria.Limit, criteria.Offset)).
+		Scopes(applyOrdering(criteria.OrderBy))
+}
+
+func applySearchConditions(conditions []dto.SearchCondition) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		for _, condition := range conditions {
+			db = applyCondition(db, condition)
 		}
+		return db
 	}
+}
 
-	queryCtx.Limit(criteria.Limit)
-	if criteria.Offset != nil {
-		queryCtx.Offset(*criteria.Offset)
+func applyPagination(limit int, offset *int) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		db = db.Limit(limit)
+		if offset != nil {
+			db = db.Offset(*offset)
+		}
+		return db
 	}
+}
 
-	if criteria.OrderBy != nil {
-		queryCtx.Order(criteria.OrderBy)
+func applyOrdering(orderBy *string) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		if orderBy != nil && *orderBy != "" {
+			db = db.Order(*orderBy)
+		}
+		return db
 	}
-
-	return queryCtx
 }
 
 func applyCondition(queryCtx *gorm.DB, condition dto.SearchCondition) *gorm.DB {
