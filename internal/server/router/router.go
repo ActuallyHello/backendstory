@@ -152,7 +152,6 @@ func registerCategoryRoutes(r chi.Router, authService auth.AuthService, category
 
 func registerProductRoutes(r chi.Router, authService auth.AuthService, productHandler *handlers.ProductHandler) {
 	r.Route("/products", func(r chi.Router) {
-		r.Use(appMiddleware.AuthMiddleware(authService, "admin", "guest"))
 
 		r.Get("/", productHandler.GetAll)
 		r.Get("/{id}", productHandler.GetById)
@@ -184,7 +183,6 @@ func setupStaticRoutes(r chi.Router, staticFilesPath string) {
 // registerProductMediaRoutes регистрирует маршруты для работы с медиа товаров
 func registerProductMediaRoutes(r chi.Router, authService auth.AuthService, productMediaHandler *handlers.ProductMediaHandler) {
 	r.Route("/product-media", func(r chi.Router) {
-		r.Use(appMiddleware.AuthMiddleware(authService, "admin", "guest"))
 
 		// Загрузка изображения
 		r.Post("/upload", productMediaHandler.UploadImage)
@@ -192,8 +190,13 @@ func registerProductMediaRoutes(r chi.Router, authService auth.AuthService, prod
 		// Получение изображений по product_id
 		r.Get("/product/{product_id}", productMediaHandler.GetByProductID)
 
+		// Защищенные маршруты (требуют аутентификации)
+		r.Group(func(r chi.Router) {
+			r.Use(appMiddleware.AuthMiddleware(authService, "admin", "guest"))
+
+			r.Delete("/{id}", productMediaHandler.Delete)
+		})
 		// Удаление изображения
-		r.Delete("/{id}", productMediaHandler.Delete)
 	})
 }
 

@@ -98,7 +98,7 @@ func (h *CategoryHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
 // @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /api/v1/categories [get]
-// @OperationId getCategoriesAll
+// @OperationId getCategoryAll
 func (h *CategoryHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
