@@ -9,9 +9,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/ActuallyHello/backendstory/internal/config"
-	"github.com/ActuallyHello/backendstory/internal/core/container"
-	"github.com/ActuallyHello/backendstory/internal/server/router"
+	"github.com/ActuallyHello/backendstory/pkg/config"
+	"github.com/ActuallyHello/backendstory/pkg/container"
+	"github.com/ActuallyHello/backendstory/pkg/server"
+	// "github.com/ActuallyHello/backendstory/internal/config"
+	// "github.com/ActuallyHello/backendstory/internal/core/container"
+	// "github.com/ActuallyHello/backendstory/internal/server/router"
 )
 
 const (
@@ -73,7 +76,7 @@ func main() {
 	}
 	slog.Info("Static directories created", "path", fullPath)
 
-	r := router.SetupRouter(container, config.ServerConfig.StaticFilesPath)
+	r := server.SetupRouter(container, config.ServerConfig.StaticFilesPath)
 
 	slog.Info("Starting server on port " + config.ServerConfig.Addr)
 
