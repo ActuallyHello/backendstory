@@ -7,6 +7,7 @@ import (
 
 	appErr "github.com/ActuallyHello/backendstory/internal/core/errors"
 	"github.com/ActuallyHello/backendstory/internal/store/entities"
+	"github.com/ActuallyHello/backendstory/internal/store/repositories/txmanager"
 )
 
 const (
@@ -19,6 +20,7 @@ type PurchaseService interface {
 }
 
 type purchaseService struct {
+	txManager        txmanager.TxManager
 	cartService      CartService
 	cartItemService  CartItemService
 	productService   ProductService
@@ -98,19 +100,27 @@ func (s *purchaseService) Purchase(ctx context.Context, cartID uint) error {
 	for _, cartItem := range cartItems {
 		switch cartItem.StatusID {
 		case createdStatus.ID:
-			cartItem.StatusID = pendingStatus.ID
-			if _, err := s.cartItemService.Update(ctx, cartItem); err != nil {
-				return err
-			}
 			product, err := s.productService.GetByID(ctx, cartItem.ProductID)
 			if err != nil {
 				return err
 			}
-			if product.Quantity < cartItem.Quantity {
-				return appErr.NewLogicalError(nil, purchaseServiceCode, "Невозможно оформить товар! Текущее количество товара меньше чем запрашиваемые на покупку!")
-			}
-			product.Quantity = product.Quantity - cartItem.Quantity
-			if _, err := s.productService.Update(ctx, product); err != nil {
+
+			err = s.txManager.Do(ctx, func(ctx context.Context) error {
+				cartItem.StatusID = pendingStatus.ID
+				if _, err := s.cartItemService.Update(ctx, cartItem); err != nil {
+					return err
+				}
+
+				if product.Quantity < cartItem.Quantity {
+					return appErr.NewLogicalError(nil, purchaseServiceCode, "Невозможно оформить товар! Текущее количество товара меньше чем запрашиваемые на покупку!")
+				}
+				product.Quantity = product.Quantity - cartItem.Quantity
+				if _, err := s.productService.Update(ctx, product); err != nil {
+					return err
+				}
+				return nil
+			})
+			if err != nil {
 				return err
 			}
 		case pendingStatus.ID:

@@ -74,12 +74,7 @@ func (s *cartItemService) Update(ctx context.Context, cartItem entities.CartItem
 		return entities.CartItem{}, err
 	}
 
-	existing, err := s.repo.FindByID(ctx, cartItem.ID)
-	if err != nil {
-		return entities.CartItem{}, err
-	}
-
-	updated, err := s.repo.Update(ctx, existing)
+	updated, err := s.repo.Update(ctx, cartItem)
 	if err != nil {
 		slog.Error("Update cartItem failed", "error", err, "cartID", cartItem.CartID)
 		return entities.CartItem{}, err

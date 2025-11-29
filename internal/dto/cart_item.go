@@ -14,6 +14,13 @@ type CartItemCreateRequest struct {
 	Quantity  uint `json:"quantity" validate:"required,min=1"`
 }
 
+// CartItemUpdateRequest represents request for creating cart item
+// @Name CartItemUpdateRequest
+type CartItemUpdateRequest struct {
+	CartItemID uint `json:"cart_item_id" validate:"required,min=1"`
+	Quantity   uint `json:"quantity" validate:"required,min=1"`
+}
+
 // CartItemDTO represents cart item data transfer object
 // @Name CartItemDTO
 type CartItemDTO struct {

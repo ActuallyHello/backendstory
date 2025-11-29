@@ -31,6 +31,10 @@ func SetupRouter(container *container.AppContainer, staticFilesPath string) http
 	setupStaticRoutes(r, staticFilesPath)
 
 	r.Route(apiV1, func(r chi.Router) {
+		// TODO:
+		// 	refactor logs
+		//  transaction manager
+
 		r.Post(register, container.GetAuthHandler().Register)
 		r.Post(login, container.GetAuthHandler().Login)
 
@@ -221,6 +225,7 @@ func registerCartItemRoutes(r chi.Router, authService auth.AuthService, cartItem
 		r.Post("/search", cartItemHandler.GetWithSearchCriteria)
 
 		r.Post("/", cartItemHandler.Create)
+		r.Put("/", cartItemHandler.Update)
 	})
 }
 

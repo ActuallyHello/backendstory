@@ -65,8 +65,56 @@ func (h *CartItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 	cartItem := entities.CartItem{
 		ProductID: req.ProductID,
 		CartID:    req.CartID,
+		Quantity:  req.Quantity,
 	}
 	cartItem, err := h.cartItemService.Create(ctx, cartItem)
+	if err != nil {
+		middleware.HandleError(w, r, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(dto.ToCartItemDTO(cartItem))
+}
+
+// Create создает новый элемент корзины
+// @Summary Создать элемент корзины
+// @Description Создает новый элемент корзины
+// @Tags CartItems
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body dto.CartItemCreateRequest true "Данные для создания элемента корзины"
+// @Success 201 {object} dto.CartItemDTO "Созданный элемент корзины"
+// @Failure 400 {object} dto.ErrorResponse "Ошибка валидации"
+// @Failure 401 {object} dto.ErrorResponse "Не авторизован"
+// @Failure 403 {object} dto.ErrorResponse "Доступ запрещен"
+// @Failure 409 {object} dto.ErrorResponse "Элемент корзины уже существует"
+// @Failure 500 {object} dto.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /api/v1/cart-items [post]
+// @OperationId createCartItem
+func (h *CartItemHandler) Update(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var req dto.CartItemUpdateRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		middleware.HandleError(w, r, appErr.NewTechnicalError(err, cartItemHandlerCode, err.Error()))
+		return
+	}
+	if err := h.validate.Struct(req); err != nil {
+		details := common.CollectValidationDetails(err)
+		middleware.HandleValidationError(w, r, appErr.NewLogicalError(err, cartItemHandlerCode, err.Error()), details)
+		return
+	}
+
+	cartItem, err := h.cartItemService.GetByID(ctx, req.CartItemID)
+	if err != nil {
+		middleware.HandleError(w, r, err)
+		return
+	}
+
+	cartItem.Quantity = req.Quantity
+	cartItem, err = h.cartItemService.Update(ctx, cartItem)
 	if err != nil {
 		middleware.HandleError(w, r, err)
 		return
