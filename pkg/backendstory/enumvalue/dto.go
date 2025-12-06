@@ -23,12 +23,12 @@ type EnumValueUpdateRequest struct {
 // EnumValueDTO represents enum value data transfer object
 // @Name EnumValueDTO
 type EnumValueDTO struct {
-	ID        uint      `json:"id"`
+	ID        uint      `json:"id" validate:"required"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
-	Code      string    `json:"code"`
-	Label     string    `json:"label"`
-	EnumID    uint      `json:"enum_id"`
+	Code      string    `json:"code" validate:"required"`
+	Label     string    `json:"label" validate:"required"`
+	EnumID    uint      `json:"enum_id" validate:"required"`
 }
 
 func ToEnumValueDTO(enumValue EnumValue) EnumValueDTO {

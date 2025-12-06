@@ -26,15 +26,15 @@ type UpdatePersonRequest struct {
 // PersonDTO represents person data transfer object
 // @Name PersonDTO
 type PersonDTO struct {
-	ID        uint       `json:"id"`
+	ID        uint       `json:"id" validate:"required"`
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt time.Time  `json:"updated_at"`
 	DeletedAt *time.Time `json:"deleted_at"`
 
-	Firstname string `json:"firstname"`
-	Lastname  string `json:"lastname"`
-	Phone     string `json:"phone"`
-	UserLogin string `json:"user_login"`
+	Firstname string `json:"firstname" validate:"required"`
+	Lastname  string `json:"lastname" validate:"required"`
+	Phone     string `json:"phone" validate:"required"`
+	UserLogin string `json:"user_login" validate:"required"`
 }
 
 func ToPersonDTO(person Person) PersonDTO {

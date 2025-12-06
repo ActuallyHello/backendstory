@@ -22,12 +22,12 @@ type CartItemUpdateRequest struct {
 // CartItemDTO represents cart item data transfer object
 // @Name CartItemDTO
 type CartItemDTO struct {
-	ID        uint      `json:"id"`
+	ID        uint      `json:"id" validate:"required"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
-	ProductID uint      `json:"product_id"`
-	CartID    uint      `json:"cart_id"`
-	Quantity  uint      `json:"quantity"`
+	ProductID uint      `json:"product_id" validate:"required"`
+	CartID    uint      `json:"cart_id" validate:"required"`
+	Quantity  uint      `json:"quantity" validate:"required"`
 }
 
 func ToCartItemDTO(cartItem CartItem) CartItemDTO {
