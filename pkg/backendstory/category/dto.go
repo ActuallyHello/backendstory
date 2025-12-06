@@ -22,12 +22,12 @@ type CategoryUpdateRequest struct {
 // CategoryDTO represents category data transfer object
 // @Name CategoryDTO
 type CategoryDTO struct {
-	ID         uint      `json:"id"`
+	ID         uint      `json:"id" validate:"required"`
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
-	Code       string    `json:"code"`
-	Label      string    `json:"label"`
-	CategoryID *uint     `json:"category_id"`
+	Code       string    `json:"code" validate:"required"`
+	Label      string    `json:"label" validate:"required"`
+	CategoryID *uint     `json:"category_id" validate:"required"`
 }
 
 func ToCategoryDTO(category Category) CategoryDTO {

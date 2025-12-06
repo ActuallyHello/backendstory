@@ -32,16 +32,16 @@ type ProductUpdateRequest struct {
 // ProductDTO represents product data transfer object
 // @Name ProductDTO
 type ProductDTO struct {
-	ID         uint      `json:"id"`
+	ID         uint      `json:"id" validate:"required"`
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
-	Code       string    `json:"code"`
-	Label      string    `json:"label"`
-	Sku        string    `json:"sku"`
-	Price      string    `json:"price"`
-	Quantity   uint      `json:"quantity"`
-	CategoryID uint      `json:"category_id"`
-	StatusID   uint      `json:"status_id"`
+	Code       string    `json:"code" validate:"required"`
+	Label      string    `json:"label" validate:"required"`
+	Sku        string    `json:"sku" validate:"required"`
+	Price      string    `json:"price" validate:"required"`
+	Quantity   uint      `json:"quantity" validate:"required"`
+	CategoryID uint      `json:"category_id" validate:"required"`
+	StatusID   uint      `json:"status_id" validate:"required"`
 }
 
 func ToProductDTO(product Product) ProductDTO {

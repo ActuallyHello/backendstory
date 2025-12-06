@@ -13,11 +13,11 @@ type ProductMediaCreateRequest struct {
 // ProductMediaDTO represents product media data transfer object
 // @Description Product media information
 type ProductMediaDTO struct {
-	ID        uint      `json:"id" example:"1"`
+	ID        uint      `json:"id" example:"1" validate:"required"`
 	CreatedAt time.Time `json:"created_at" example:"2023-10-05T14:30:00Z"`
 	UpdatedAt time.Time `json:"updated_at" example:"2023-10-05T14:30:00Z"`
 	Link      string    `json:"link" example:"/static/media/product_1.jpg"`
-	ProductID uint      `json:"product_id" example:"123"`
+	ProductID uint      `json:"product_id" example:"123" validate:"required"`
 }
 
 func ToProductMediaDTO(media ProductMedia) ProductMediaDTO {
