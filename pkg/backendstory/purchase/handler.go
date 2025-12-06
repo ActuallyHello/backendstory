@@ -42,14 +42,14 @@ func NewPurchaseHandler(
 // @Security BearerAuth
 // @Param request body AddToCartRequest true "Данные для добавления в корзину"
 // @Success 201 "Товар успешно добавлен в корзину"
-// @Failure 400 {object} ErrorResponse "Ошибка валидации"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} ErrorResponse "Товар или пользователь не найден"
-// @Failure 409 {object} ErrorResponse "Недостаточно товара на складе"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
-// @Router /api/v1/purchases/cart [post]
-// @OperationId addToCart
+// @Failure 400 {object} core.ErrorResponse "Ошибка валидации"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} core.ErrorResponse "Товар или пользователь не найден"
+// @Failure 409 {object} core.ErrorResponse "Недостаточно товара на складе"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /purchases/cart [post]
+// @ID addToCart
 func (h *PurchaseHandler) AddToCart(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -97,14 +97,14 @@ func (h *PurchaseHandler) AddToCart(w http.ResponseWriter, r *http.Request) {
 // @Security BearerAuth
 // @Param request body PurchaseRequest true "Данные для оформления покупки"
 // @Success 201 "Покупка успешно оформлена"
-// @Failure 400 {object} ErrorResponse "Ошибка валидации"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} ErrorResponse "Корзина не найдена"
-// @Failure 409 {object} ErrorResponse "Недостаточно товаров на складе"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
-// @Router /api/v1/purchases [post]
-// @OperationId purchaseCart
+// @Failure 400 {object} core.ErrorResponse "Ошибка валидации"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} core.ErrorResponse "Корзина не найдена"
+// @Failure 409 {object} core.ErrorResponse "Недостаточно товаров на складе"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /purchases [post]
+// @ID purchaseCart
 func (h *PurchaseHandler) Purchase(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

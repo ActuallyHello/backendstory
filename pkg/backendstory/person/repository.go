@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 
-	"github.com/ActuallyHello/backendstory/internal/store/repositories/common"
 	"github.com/ActuallyHello/backendstory/pkg/core"
 	"gorm.io/gorm"
 )
@@ -30,7 +29,7 @@ func (r *personRepository) FindByUserLogin(ctx context.Context, userLogin string
 	var person Person
 	if err := r.GetDB().WithContext(ctx).Where("USERID = ?", userLogin).First(&person).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return Person{}, common.NewNotFoundError("person not found by user login")
+			return Person{}, core.NewNotFoundError("person not found by user login")
 		}
 		return Person{}, err
 	}

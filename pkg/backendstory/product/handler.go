@@ -45,13 +45,13 @@ func NewProductHandler(
 // @Security BearerAuth
 // @Param request body ProductCreateRequest true "Данные для создания продукта"
 // @Success 201 {object} ProductDTO "Созданный продукт"
-// @Failure 400 {object} ErrorResponse "Ошибка валидации"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 409 {object} ErrorResponse "Продукт с таким кодом уже существует"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
-// @Router /api/v1/products [post]
-// @OperationId createProduct
+// @Failure 400 {object} core.ErrorResponse "Ошибка валидации"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 409 {object} core.ErrorResponse "Продукт с таким кодом уже существует"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /products [post]
+// @ID createProduct
 func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -110,11 +110,11 @@ func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Security BearerAuth
 // @Success 200 {array} ProductDTO "Список продуктов"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
-// @Router /api/v1/products [get]
-// @OperationId getProductAll
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /products [get]
+// @ID getProductAll
 func (h *ProductHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -142,13 +142,13 @@ func (h *ProductHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 // @Security BearerAuth
 // @Param id path int true "ID продукта"
 // @Success 200 {object} ProductDTO "Продукт"
-// @Failure 400 {object} ErrorResponse "Неверный ID"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} ErrorResponse "Продукт не найден"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
-// @Router /api/v1/products/{id} [get]
-// @OperationId getProductById
+// @Failure 400 {object} core.ErrorResponse "Неверный ID"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} core.ErrorResponse "Продукт не найден"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /products/{id} [get]
+// @ID getProductById
 func (h *ProductHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -182,13 +182,13 @@ func (h *ProductHandler) GetById(w http.ResponseWriter, r *http.Request) {
 // @Security BearerAuth
 // @Param code path string true "Код продукта"
 // @Success 200 {object} ProductDTO "Продукт"
-// @Failure 400 {object} ErrorResponse "Неверный код"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} ErrorResponse "Продукт не найден"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
-// @Router /api/v1/products/code/{code} [get]
-// @OperationId getProductByCode
+// @Failure 400 {object} core.ErrorResponse "Неверный код"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} core.ErrorResponse "Продукт не найден"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /products/code/{code} [get]
+// @ID getProductByCode
 func (h *ProductHandler) GetByCode(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -215,14 +215,14 @@ func (h *ProductHandler) GetByCode(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param request body SearchCriteria true "Критерии поиска"
+// @Param request body core.SearchCriteria true "Критерии поиска"
 // @Success 200 {array} ProductDTO "Список найденных продуктов"
-// @Failure 400 {object} ErrorResponse "Ошибка валидации"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
-// @Router /api/v1/products/search [post]
-// @OperationId searchProduct
+// @Failure 400 {object} core.ErrorResponse "Ошибка валидации"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /products/search [post]
+// @ID getProductSearch
 func (h *ProductHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -261,13 +261,13 @@ func (h *ProductHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Re
 // @Security BearerAuth
 // @Param id path int true "ID продукта"
 // @Success 204 "Успешно удалено"
-// @Failure 400 {object} ErrorResponse "Неверный ID"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} ErrorResponse "Продукт не найден"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
-// @Router /api/v1/products/{id} [delete]
-// @OperationId deleteProduct
+// @Failure 400 {object} core.ErrorResponse "Неверный ID"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} core.ErrorResponse "Продукт не найден"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /products/{id} [delete]
+// @ID deleteProduct
 func (h *ProductHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -305,13 +305,13 @@ func (h *ProductHandler) Delete(w http.ResponseWriter, r *http.Request) {
 // @Security BearerAuth
 // @Param category_id path int true "ID категории"
 // @Success 200 {array} ProductDTO "Список продуктов"
-// @Failure 400 {object} ErrorResponse "Неверная категория"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} ErrorResponse "Продукты не найдены"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
-// @Router /api/v1/products/category/{category_id} [get]
-// @OperationId getProductByCategoryId
+// @Failure 400 {object} core.ErrorResponse "Неверная категория"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} core.ErrorResponse "Продукты не найдены"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /products/category/{category_id} [get]
+// @ID getProductByCategoryId
 func (h *ProductHandler) GetByCategoryID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
