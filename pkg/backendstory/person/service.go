@@ -8,7 +8,6 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/ActuallyHello/backendstory/internal/store/repositories/common"
 	"github.com/ActuallyHello/backendstory/pkg/core"
 )
 
@@ -105,7 +104,7 @@ func (s *personService) GetByUserLogin(ctx context.Context, userLogin string) (P
 	person, err := s.personRepo.FindByUserLogin(ctx, userLogin)
 	if err != nil {
 		slog.Error("Failed to find person by user ID", "error", err, "user_login", userLogin)
-		if errors.Is(err, &common.NotFoundError{}) {
+		if errors.Is(err, &core.NotFoundError{}) {
 			return Person{}, core.NewLogicalError(err, personServiceCode, err.Error())
 		}
 		return Person{}, core.NewTechnicalError(err, personServiceCode, err.Error())

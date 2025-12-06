@@ -36,12 +36,12 @@ func NewEnumValueHandler(
 // @Security BearerAuth
 // @Param request body EnumValueCreateRequest true "Данные для создания значения перечисления"
 // @Success 201 {object} EnumValueDTO "Созданное значение перечисления"
-// @Failure 400 {object} ErrorResponse "Ошибка валидации"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
+// @Failure 400 {object} core.ErrorResponse "Ошибка валидации"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /enumeration-values [post]
-// @OperationId createEnumValue
+// @ID createEnumValue
 func (h *EnumValueHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -79,11 +79,11 @@ func (h *EnumValueHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Security BearerAuth
 // @Success 200 {array} EnumValueDTO "Список значений перечислений"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /enumeration-values [get]
-// @OperationId getEnumValueAll
+// @ID getEnumValueAll
 func (h *EnumValueHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -111,13 +111,13 @@ func (h *EnumValueHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 // @Security BearerAuth
 // @Param id path int true "ID значения перечисления"
 // @Success 200 {object} EnumValueDTO "Значение перечисления"
-// @Failure 400 {object} ErrorResponse "Неверный ID"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} ErrorResponse "Значение перечисления не найдено"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
+// @Failure 400 {object} core.ErrorResponse "Неверный ID"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} core.ErrorResponse "Значение перечисления не найдено"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /enumeration-values/{id} [get]
-// @OperationId getEnumValueById
+// @ID getEnumValueById
 func (h *EnumValueHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -151,12 +151,12 @@ func (h *EnumValueHandler) GetById(w http.ResponseWriter, r *http.Request) {
 // @Security BearerAuth
 // @Param enumeration_id path int true "ID перечисления"
 // @Success 200 {array} EnumValueDTO "Список значений перечисления"
-// @Failure 400 {object} ErrorResponse "Неверный ID перечисления"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
+// @Failure 400 {object} core.ErrorResponse "Неверный ID перечисления"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /enumeration-values/enumeration/{enumeration_id} [get]
-// @OperationId getEnumValueByEnumId
+// @ID getEnumValueByEnumId
 func (h *EnumValueHandler) GetByEnumId(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -195,13 +195,13 @@ func (h *EnumValueHandler) GetByEnumId(w http.ResponseWriter, r *http.Request) {
 // @Security BearerAuth
 // @Param id path int true "ID значения перечисления"
 // @Success 204 "Успешно удалено"
-// @Failure 400 {object} ErrorResponse "Неверный ID"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} ErrorResponse "Значение перечисления не найдено"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
+// @Failure 400 {object} core.ErrorResponse "Неверный ID"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} core.ErrorResponse "Значение перечисления не найдено"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /enumeration-values/{id} [delete]
-// @OperationId deleteEnumValue
+// @ID deleteEnumValue
 func (h *EnumValueHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -237,14 +237,14 @@ func (h *EnumValueHandler) Delete(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param request body SearchCriteria true "Критерии поиска"
+// @Param request body core.SearchCriteria true "Критерии поиска"
 // @Success 200 {array} EnumValueDTO "Список найденных значений перечислений"
-// @Failure 400 {object} ErrorResponse "Ошибка валидации"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
+// @Failure 400 {object} core.ErrorResponse "Ошибка валидации"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /enumeration-values/search [post]
-// @OperationId searchEnumValue
+// @ID getEnumValueSearch
 func (h *EnumValueHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

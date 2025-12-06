@@ -5,7 +5,6 @@ import (
 	"errors"
 	"log/slog"
 
-	"github.com/ActuallyHello/backendstory/internal/store/repositories/common"
 	"github.com/ActuallyHello/backendstory/pkg/core"
 )
 
@@ -98,7 +97,7 @@ func (s *enumService) GetByCode(ctx context.Context, code string) (Enum, error) 
 	enum, err := s.enumRepo.FindByCode(ctx, code)
 	if err != nil {
 		slog.Error("Failed to find enum by code", "error", err, "code", code)
-		if errors.Is(err, &common.NotFoundError{}) {
+		if errors.Is(err, &core.NotFoundError{}) {
 			return Enum{}, core.NewLogicalError(err, enumServiceCode, err.Error())
 		}
 		return Enum{}, core.NewTechnicalError(err, enumServiceCode, "ошибка при получении перечисления по коду")
