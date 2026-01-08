@@ -43,7 +43,7 @@ func NewCategoryHandler(
 // @Failure 409 {object} core.ErrorResponse "Категория с таким кодом уже существует"
 // @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /categories [post]
-// @OperationId createCategory
+// @Id createCategory
 func (h *CategoryHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -93,7 +93,7 @@ func (h *CategoryHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
 // @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /categories [get]
-// @OperationId getCategoryAll
+// @Id getCategoryAll
 func (h *CategoryHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -127,7 +127,7 @@ func (h *CategoryHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} core.ErrorResponse "Категория не найдена"
 // @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /categories/{id} [get]
-// @OperationId getCategoryById
+// @Id getCategoryById
 func (h *CategoryHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -167,7 +167,7 @@ func (h *CategoryHandler) GetById(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} core.ErrorResponse "Категория не найдена"
 // @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /categories/code/{code} [get]
-// @OperationId getCategoryByCode
+// @Id getCategoryByCode
 func (h *CategoryHandler) GetByCode(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -201,7 +201,7 @@ func (h *CategoryHandler) GetByCode(w http.ResponseWriter, r *http.Request) {
 // @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
 // @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /categories/search [post]
-// @OperationId searchCategory
+// @Id searchCategory
 func (h *CategoryHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -246,7 +246,7 @@ func (h *CategoryHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.R
 // @Failure 404 {object} core.ErrorResponse "Категория не найдена"
 // @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /categories/{id} [delete]
-// @OperationId deleteCategory
+// @Id deleteCategory
 func (h *CategoryHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -290,7 +290,7 @@ func (h *CategoryHandler) Delete(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} core.ErrorResponse "Категория не найдена"
 // @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /categories/category/{category_id} [get]
-// @OperationId getCategoryByCategoryId
+// @Id getCategoryByCategoryId
 func (h *CategoryHandler) GetByCategoryID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

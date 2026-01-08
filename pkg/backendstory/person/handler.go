@@ -42,7 +42,7 @@ func NewPersonHandler(
 // @Failure 409 {object} core.ErrorResponse "Персона с таким user_login уже существует"
 // @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /persons [post]
-// @OperationId createPerson
+// @Id createPerson
 func (h *PersonHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -85,7 +85,7 @@ func (h *PersonHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
 // @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /persons [get]
-// @OperationId getPersonAll
+// @Id getPersonAll
 func (h *PersonHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -119,7 +119,7 @@ func (h *PersonHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} core.ErrorResponse "Персона не найдена"
 // @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /persons/{id} [get]
-// @OperationId getPersonById
+// @Id getPersonById
 func (h *PersonHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -159,7 +159,7 @@ func (h *PersonHandler) GetById(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} core.ErrorResponse "Персона не найдена"
 // @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /persons/user/{user_login} [get]
-// @OperationId getPersonByUserLogin
+// @Id getPersonByUserLogin
 func (h *PersonHandler) GetByUserLogin(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -195,7 +195,7 @@ func (h *PersonHandler) GetByUserLogin(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} core.ErrorResponse "Персона не найдена"
 // @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /persons/{id} [delete]
-// @OperationId deletePerson
+// @Id deletePerson
 func (h *PersonHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -250,7 +250,7 @@ func (h *PersonHandler) Delete(w http.ResponseWriter, r *http.Request) {
 // @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
 // @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /persons/search [post]
-// @OperationId searchPerson
+// @Id searchPerson
 func (h *PersonHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

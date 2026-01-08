@@ -43,7 +43,7 @@ func NewOrderItemHandler(
 // @Failure 422 {object} core.ValidationErrorResponse "Ошибка валидации"
 // @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /order-items [post]
-// @OperationId createOrderItem
+// @Id createOrderItem
 func (h *OrderItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -89,7 +89,7 @@ func (h *OrderItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure 409 {object} core.ErrorResponse "Конфликт статусов"
 // @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /order-items/{id}/status/{status} [patch]
-// @OperationId changeOrderItemStatus
+// @Id changeOrderItemStatus
 func (h *OrderItemHandler) ChangeStatus(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -145,7 +145,7 @@ func (h *OrderItemHandler) ChangeStatus(w http.ResponseWriter, r *http.Request) 
 // @Failure 409 {object} core.ErrorResponse "Нельзя удалить элемент заказа в текущем статусе"
 // @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /order-items/{id} [delete]
-// @OperationId deleteOrderItem
+// @Id deleteOrderItem
 func (h *OrderItemHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -190,7 +190,7 @@ func (h *OrderItemHandler) Delete(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} core.ErrorResponse "Элемент заказа не найден"
 // @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /order-items/{id} [get]
-// @OperationId getOrderItemById
+// @Id getOrderItemById
 func (h *OrderItemHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -230,7 +230,7 @@ func (h *OrderItemHandler) GetById(w http.ResponseWriter, r *http.Request) {
 // @Failure 422 {object} core.ValidationErrorResponse "Ошибка валидации"
 // @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /order-items/search [post]
-// @OperationId searchOrderItems
+// @Id searchOrderItems
 func (h *OrderItemHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -274,7 +274,7 @@ func (h *OrderItemHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.
 // @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
 // @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /order-items/order/{order_id} [get]
-// @OperationId getOrderItemsByOrderId
+// @Id getOrderItemsByOrderId
 func (h *OrderItemHandler) GetByOrderID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

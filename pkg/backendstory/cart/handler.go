@@ -42,7 +42,7 @@ func NewCartHandler(
 // @Failure 409 {object} core.ErrorResponse "Корзина для пользователя уже существует"
 // @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /carts [post]
-// @OperationId createCart
+// @Id createCart
 func (h *CartHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -85,7 +85,7 @@ func (h *CartHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} core.ErrorResponse "Корзина не найдена"
 // @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /carts/{id} [get]
-// @OperationId GetCartById
+// @Id GetCartById
 func (h *CartHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -124,7 +124,7 @@ func (h *CartHandler) GetById(w http.ResponseWriter, r *http.Request) {
 // @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
 // @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /carts/search [post]
-// @OperationId searchCart
+// @Id searchCart
 func (h *CartHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -169,7 +169,7 @@ func (h *CartHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Reque
 // @Failure 404 {object} core.ErrorResponse "Корзина не найдена"
 // @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /carts/person/{person_id} [get]
-// @OperationId getCartByPersonId
+// @Id getCartByPersonId
 func (h *CartHandler) GetByPersonID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
