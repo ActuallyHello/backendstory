@@ -19,7 +19,7 @@ func Retry(operation string, fn func() (any, error), options ...RetryOption) (an
 	var res any
 	isSuccess := false
 
-	for i := 0; i < retryOptions.maxRetries; i++ {
+	for i := 1; i <= retryOptions.maxRetries; i++ {
 		res, err = fn()
 		if err != nil {
 			slog.Warn("Retry operation!", "operation", operation, "attempt", i, "err", err)
@@ -31,7 +31,7 @@ func Retry(operation string, fn func() (any, error), options ...RetryOption) (an
 	}
 
 	if !isSuccess {
-		slog.Error("Retry operations failed!", "operation", operation, "err", err)
+		slog.Error("Retry operation failed!", "operation", operation, "err", err)
 		return nil, err
 	}
 	return res, nil

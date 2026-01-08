@@ -37,12 +37,12 @@ func NewCategoryHandler(
 // @Security BearerAuth
 // @Param request body CategoryCreateRequest true "Данные для создания категории"
 // @Success 201 {object} CategoryDTO "Созданная категория"
-// @Failure 400 {object} ErrorResponse "Ошибка валидации"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 409 {object} ErrorResponse "Категория с таким кодом уже существует"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
-// @Router /api/v1/categories [post]
+// @Failure 400 {object} core.ErrorResponse "Ошибка валидации"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 409 {object} core.ErrorResponse "Категория с таким кодом уже существует"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /categories [post]
 // @OperationId createCategory
 func (h *CategoryHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -89,10 +89,10 @@ func (h *CategoryHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Security BearerAuth
 // @Success 200 {array} CategoryDTO "Список категорий"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
-// @Router /api/v1/categories [get]
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /categories [get]
 // @OperationId getCategoryAll
 func (h *CategoryHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -121,12 +121,12 @@ func (h *CategoryHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 // @Security BearerAuth
 // @Param id path int true "ID категории"
 // @Success 200 {object} CategoryDTO "Категория"
-// @Failure 400 {object} ErrorResponse "Неверный ID"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} ErrorResponse "Категория не найдена"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
-// @Router /api/v1/categories/{id} [get]
+// @Failure 400 {object} core.ErrorResponse "Неверный ID"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} core.ErrorResponse "Категория не найдена"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /categories/{id} [get]
 // @OperationId getCategoryById
 func (h *CategoryHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -161,12 +161,12 @@ func (h *CategoryHandler) GetById(w http.ResponseWriter, r *http.Request) {
 // @Security BearerAuth
 // @Param code path string true "Код категории"
 // @Success 200 {object} CategoryDTO "Категория"
-// @Failure 400 {object} ErrorResponse "Неверный код"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} ErrorResponse "Категория не найдена"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
-// @Router /api/v1/categories/code/{code} [get]
+// @Failure 400 {object} core.ErrorResponse "Неверный код"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} core.ErrorResponse "Категория не найдена"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /categories/code/{code} [get]
 // @OperationId getCategoryByCode
 func (h *CategoryHandler) GetByCode(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -194,13 +194,13 @@ func (h *CategoryHandler) GetByCode(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param request body SearchCriteria true "Критерии поиска"
+// @Param request body core.SearchCriteria true "Критерии поиска"
 // @Success 200 {array} CategoryDTO "Список найденных категорий"
-// @Failure 400 {object} ErrorResponse "Ошибка валидации"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
-// @Router /api/v1/categories/search [post]
+// @Failure 400 {object} core.ErrorResponse "Ошибка валидации"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /categories/search [post]
 // @OperationId searchCategory
 func (h *CategoryHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -240,12 +240,12 @@ func (h *CategoryHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.R
 // @Security BearerAuth
 // @Param id path int true "ID категории"
 // @Success 204 "Успешно удалено"
-// @Failure 400 {object} ErrorResponse "Неверный ID"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} ErrorResponse "Категория не найдена"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
-// @Router /api/v1/categories/{id} [delete]
+// @Failure 400 {object} core.ErrorResponse "Неверный ID"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} core.ErrorResponse "Категория не найдена"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /categories/{id} [delete]
 // @OperationId deleteCategory
 func (h *CategoryHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -284,12 +284,12 @@ func (h *CategoryHandler) Delete(w http.ResponseWriter, r *http.Request) {
 // @Security BearerAuth
 // @Param category_id path int true "ID родителя категории"
 // @Success 200 {array} CategoryDTO "Список категорий"
-// @Failure 400 {object} ErrorResponse "Неверная категория"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} ErrorResponse "Категория не найдена"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
-// @Router /api/v1/categories/category/{category_id} [get]
+// @Failure 400 {object} core.ErrorResponse "Неверная категория"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} core.ErrorResponse "Категория не найдена"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /categories/category/{category_id} [get]
 // @OperationId getCategoryByCategoryId
 func (h *CategoryHandler) GetByCategoryID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()

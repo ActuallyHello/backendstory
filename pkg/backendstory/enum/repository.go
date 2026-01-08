@@ -26,9 +26,9 @@ func NewEnumRepository(db *gorm.DB) *enumRepository {
 
 func (r *enumRepository) FindByCode(ctx context.Context, code string) (Enum, error) {
 	var enum Enum
-	if err := r.GetDB().WithContext(ctx).Where("CODE = ?", code).First(&enum).Error; err != nil {
+	if err := r.GetDB(ctx).Where("CODE = ?", code).First(&enum).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return Enum{}, core.NewNotFoundError("перечисление не существует")
+			return Enum{}, core.NewNotFoundError("Перечисление не найдено по переданному коду")
 		}
 		return Enum{}, err
 	}

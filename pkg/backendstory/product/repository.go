@@ -29,9 +29,9 @@ func NewProductRepository(db *gorm.DB) *productRepository {
 // FindByCode ищет по коду
 func (r *productRepository) FindByCode(ctx context.Context, code string) (Product, error) {
 	var product Product
-	if err := r.GetDB().WithContext(ctx).Where("CODE = ?", code).First(&product).Error; err != nil {
+	if err := r.GetDB(ctx).Where("CODE = ?", code).First(&product).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return Product{}, core.NewNotFoundError("product not found by code")
+			return Product{}, core.NewNotFoundError("Продукт не существует по переданному коду")
 		}
 		return Product{}, err
 	}
@@ -41,9 +41,9 @@ func (r *productRepository) FindByCode(ctx context.Context, code string) (Produc
 // FindBySku ищет по артиклу
 func (r *productRepository) FindBySku(ctx context.Context, sku string) (Product, error) {
 	var product Product
-	if err := r.GetDB().WithContext(ctx).Where("SKU = ?", sku).First(&product).Error; err != nil {
+	if err := r.GetDB(ctx).Where("SKU = ?", sku).First(&product).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return Product{}, core.NewNotFoundError("product not found by sku")
+			return Product{}, core.NewNotFoundError("Товара с таким артикулом не существует")
 		}
 		return Product{}, err
 	}
@@ -53,9 +53,9 @@ func (r *productRepository) FindBySku(ctx context.Context, sku string) (Product,
 // FindByCategoryID ищеn по категории
 func (r *productRepository) FindByCategoryID(ctx context.Context, categoryID uint) ([]Product, error) {
 	var products []Product
-	if err := r.GetDB().WithContext(ctx).Where("CATEGORYID = ?", categoryID).Find(&products).Error; err != nil {
+	if err := r.GetDB(ctx).Where("CATEGORYID = ?", categoryID).Find(&products).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, core.NewNotFoundError("product not found by category id")
+			return nil, core.NewNotFoundError("Продукт не найден по заданной категории")
 		}
 		return nil, err
 	}

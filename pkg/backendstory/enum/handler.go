@@ -36,11 +36,11 @@ func NewEnumHandler(
 // @Security BearerAuth
 // @Param request body EnumCreateRequest true "Данные для создания перечисления"
 // @Success 201 {object} EnumDTO "Созданное перечисление"
-// @Failure 400 {object} ErrorResponse "Ошибка валидации"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 409 {object} ErrorResponse "Перечисление с таким кодом уже существует"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
+// @Failure 400 {object} core.ErrorResponse "Ошибка валидации"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 409 {object} core.ErrorResponse "Перечисление с таким кодом уже существует"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /enumerations [post]
 // @OperationId createEnumValue
 func (h *EnumHandler) Create(w http.ResponseWriter, r *http.Request) {
@@ -79,9 +79,9 @@ func (h *EnumHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Security BearerAuth
 // @Success 200 {array} EnumDTO "Список перечислений"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /enumerations [get]
 // @OperationId getEnumAll
 func (h *EnumHandler) GetAll(w http.ResponseWriter, r *http.Request) {
@@ -111,11 +111,11 @@ func (h *EnumHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 // @Security BearerAuth
 // @Param id path int true "ID перечисления"
 // @Success 200 {object} EnumDTO "Перечисление"
-// @Failure 400 {object} ErrorResponse "Неверный ID"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} ErrorResponse "Перечисление не найдено"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
+// @Failure 400 {object} core.ErrorResponse "Неверный ID"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} core.ErrorResponse "Перечисление не найдено"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /enumerations/{id} [get]
 // @OperationId getEnumById
 func (h *EnumHandler) GetById(w http.ResponseWriter, r *http.Request) {
@@ -123,12 +123,12 @@ func (h *EnumHandler) GetById(w http.ResponseWriter, r *http.Request) {
 
 	reqID := r.PathValue("id")
 	if reqID == "" {
-		core.HandleError(w, r, core.NewLogicalError(nil, enumHandlerCode, "ID parameter missing"))
+		core.HandleError(w, r, core.NewLogicalError(nil, enumHandlerCode, "Отсуствует ИД параметр"))
 		return
 	}
 	id, err := strconv.Atoi(reqID)
 	if err != nil {
-		core.HandleError(w, r, core.NewLogicalError(err, enumHandlerCode, "ID parameter must be integer!"+err.Error()))
+		core.HandleError(w, r, core.NewLogicalError(err, enumHandlerCode, "ИД параметр должен быть числовым!"+err.Error()))
 		return
 	}
 
@@ -151,11 +151,11 @@ func (h *EnumHandler) GetById(w http.ResponseWriter, r *http.Request) {
 // @Security BearerAuth
 // @Param code path string true "Код перечисления"
 // @Success 200 {object} EnumDTO "Перечисление"
-// @Failure 400 {object} ErrorResponse "Неверный код"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} ErrorResponse "Перечисление не найдено"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
+// @Failure 400 {object} core.ErrorResponse "Неверный код"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} core.ErrorResponse "Перечисление не найдено"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /enumerations/code/{code} [get]
 // @OperationId getEnumByCode
 func (h *EnumHandler) GetByCode(w http.ResponseWriter, r *http.Request) {
@@ -163,7 +163,7 @@ func (h *EnumHandler) GetByCode(w http.ResponseWriter, r *http.Request) {
 
 	code := r.PathValue("code")
 	if code == "" {
-		core.HandleError(w, r, core.NewLogicalError(nil, enumHandlerCode, "ID parameter missing"))
+		core.HandleError(w, r, core.NewLogicalError(nil, enumHandlerCode, "Отсуствует параметр - код"))
 		return
 	}
 
@@ -184,12 +184,12 @@ func (h *EnumHandler) GetByCode(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param request body SearchCriteria true "Критерии поиска"
+// @Param request body core.SearchCriteria true "Критерии поиска"
 // @Success 200 {array} EnumDTO "Список найденных перечислений"
-// @Failure 400 {object} ErrorResponse "Ошибка валидации"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
+// @Failure 400 {object} core.ErrorResponse "Ошибка валидации"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /enumerations/search [post]
 // @OperationId searchEnum
 func (h *EnumHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Request) {
@@ -230,11 +230,11 @@ func (h *EnumHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Reque
 // @Security BearerAuth
 // @Param id path int true "ID перечисления"
 // @Success 204 "Успешно удалено"
-// @Failure 400 {object} ErrorResponse "Неверный ID"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} ErrorResponse "Перечисление не найдено"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
+// @Failure 400 {object} core.ErrorResponse "Неверный ID"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} core.ErrorResponse "Перечисление не найдено"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /enumerations/{id} [delete]
 // @OperationId deleteEnum
 func (h *EnumHandler) Delete(w http.ResponseWriter, r *http.Request) {
@@ -242,12 +242,12 @@ func (h *EnumHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	reqID := r.PathValue("id")
 	if reqID == "" {
-		core.HandleError(w, r, core.NewLogicalError(nil, enumHandlerCode, "ID parameter missing"))
+		core.HandleError(w, r, core.NewLogicalError(nil, enumHandlerCode, "Отсуствует ИД параметр"))
 		return
 	}
 	id, err := strconv.Atoi(reqID)
 	if err != nil {
-		core.HandleError(w, r, core.NewLogicalError(err, enumHandlerCode, "ID parameter must be integer!"+err.Error()))
+		core.HandleError(w, r, core.NewLogicalError(err, enumHandlerCode, "ИД параметр должен быть числовым!"+err.Error()))
 		return
 	}
 

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"runtime/debug"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -38,7 +39,6 @@ func ErrorHandler(next http.Handler) http.Handler {
 
 		rw := &responseWriter{ResponseWriter: w, status: http.StatusOK}
 		next.ServeHTTP(rw, r)
-
 	})
 }
 
@@ -98,6 +98,7 @@ func HandleError(w http.ResponseWriter, r *http.Request, err error) {
 		"Code", response.Code,
 		"Message", response.Message,
 	)
+	debug.PrintStack()
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(response.Status)

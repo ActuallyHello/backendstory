@@ -54,14 +54,14 @@ func NewProductMediaHandler(
 // @Param product_id formData integer true "ID товара" minimum(1)
 // @Param file formData file true "Изображение товара"
 // @Success 201 {object} ProductMediaDTO "Изображение успешно загружено"
-// @Failure 400 {object} ErrorResponse "Неверный запрос: отсутствует product_id или файл, неверный формат данных"
-// @Failure 401 {object} ErrorResponse "Требуется аутентификация"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен: недостаточно прав"
-// @Failure 404 {object} ErrorResponse "Товар не найден"
-// @Failure 413 {object} ErrorResponse "Превышен максимальный размер файла (10MB)"
-// @Failure 415 {object} ErrorResponse "Неподдерживаемый тип файла"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
-// @Router /api/v1/product-media/upload [post]
+// @Failure 400 {object} core.ErrorResponse "Неверный запрос: отсутствует product_id или файл, неверный формат данных"
+// @Failure 401 {object} core.ErrorResponse "Требуется аутентификация"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен: недостаточно прав"
+// @Failure 404 {object} core.ErrorResponse "Товар не найден"
+// @Failure 413 {object} core.ErrorResponse "Превышен максимальный размер файла (10MB)"
+// @Failure 415 {object} core.ErrorResponse "Неподдерживаемый тип файла"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /product-media/upload [post]
 // @OperationId uploadProductMediaImage
 func (h *ProductMediaHandler) UploadImage(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -129,12 +129,12 @@ func (h *ProductMediaHandler) UploadImage(w http.ResponseWriter, r *http.Request
 // @Security BearerAuth
 // @Param product_id path integer true "ID товара" minimum(1)
 // @Success 200 {array} ProductMediaDTO "Список изображений товара"
-// @Failure 400 {object} ErrorResponse "Неверный ID товара"
-// @Failure 401 {object} ErrorResponse "Требуется аутентификация"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен: недостаточно прав"
-// @Failure 404 {object} ErrorResponse "Товар не найден"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
-// @Router /api/v1/product-media/product/{product_id} [get]
+// @Failure 400 {object} core.ErrorResponse "Неверный ID товара"
+// @Failure 401 {object} core.ErrorResponse "Требуется аутентификация"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен: недостаточно прав"
+// @Failure 404 {object} core.ErrorResponse "Товар не найден"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /product-media/product/{product_id} [get]
 // @OperationId getProductMediaByProductId
 func (h *ProductMediaHandler) GetByProductID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -182,12 +182,12 @@ func (h *ProductMediaHandler) GetByProductID(w http.ResponseWriter, r *http.Requ
 // @Security BearerAuth
 // @Param id path integer true "ID изображения" minimum(1)
 // @Success 204 "Изображение успешно удалено"
-// @Failure 400 {object} ErrorResponse "Неверный ID изображения"
-// @Failure 401 {object} ErrorResponse "Требуется аутентификация"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен: недостаточно прав"
-// @Failure 404 {object} ErrorResponse "Изображение не найдено"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
-// @Router /api/v1/product-media/{id} [delete]
+// @Failure 400 {object} core.ErrorResponse "Неверный ID изображения"
+// @Failure 401 {object} core.ErrorResponse "Требуется аутентификация"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен: недостаточно прав"
+// @Failure 404 {object} core.ErrorResponse "Изображение не найдено"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /product-media/{id} [delete]
 // @OperationId deleteProductMedia
 func (h *ProductMediaHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()

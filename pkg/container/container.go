@@ -12,12 +12,15 @@ import (
 	"github.com/ActuallyHello/backendstory/pkg/backendstory/category"
 	"github.com/ActuallyHello/backendstory/pkg/backendstory/enum"
 	"github.com/ActuallyHello/backendstory/pkg/backendstory/enumvalue"
+	"github.com/ActuallyHello/backendstory/pkg/backendstory/order"
+	orderitem "github.com/ActuallyHello/backendstory/pkg/backendstory/order_item"
 	"github.com/ActuallyHello/backendstory/pkg/backendstory/person"
 	"github.com/ActuallyHello/backendstory/pkg/backendstory/product"
 	productmedia "github.com/ActuallyHello/backendstory/pkg/backendstory/product_media"
-	"github.com/ActuallyHello/backendstory/pkg/backendstory/purchase"
+
 	"github.com/ActuallyHello/backendstory/pkg/backendstory/resources"
 	"github.com/ActuallyHello/backendstory/pkg/config"
+	"github.com/ActuallyHello/backendstory/pkg/core"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -27,7 +30,8 @@ type AppContainer struct {
 	ctx context.Context
 
 	// database
-	db *gorm.DB
+	db        *gorm.DB
+	txManager core.TxManager
 
 	// repositoriest
 	enumRepo         enum.EnumRepository
@@ -38,6 +42,8 @@ type AppContainer struct {
 	productMediaRepo productmedia.ProductMediaRepository
 	cartRepo         cart.CartRepository
 	cartItemRepo     cartitem.CartItemRepository
+	orderRepo        order.OrderRepository
+	orderItemRepo    orderitem.OrderItemRepository
 
 	// services
 	enumService         enum.EnumService
@@ -48,7 +54,8 @@ type AppContainer struct {
 	productMediaService productmedia.ProductMediaService
 	cartService         cart.CartService
 	cartItemService     cartitem.CartItemService
-	purchaseService     purchase.PurchaseService
+	orderItemService    orderitem.OrderItemService
+	orderService        order.OrderService
 
 	// resources
 	fileService resources.FileService
@@ -63,7 +70,8 @@ type AppContainer struct {
 	productMediaHandler *productmedia.ProductMediaHandler
 	cartHandler         *cart.CartHandler
 	cartItemHandler     *cartitem.CartItemHandler
-	purchaseHandler     *purchase.PurchaseHandler
+	orderHandler        *order.OrderHandler
+	orderItemHandler    *orderitem.OrderItemHandler
 
 	// auth
 	authService auth.AuthService
@@ -80,6 +88,7 @@ func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
 		slog.Error("Error while establish database connection", "err", err)
 		log.Fatal(err)
 	}
+	txManager := core.NewGormTxManager(db)
 
 	// repositories
 	enumRepo := enum.NewEnumRepository(db)
@@ -90,17 +99,20 @@ func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
 	productMediaRepo := productmedia.NewProductMediaRepository(db)
 	cartRepo := cart.NewCartRepository(db)
 	cartItemRepo := cartitem.NewCartItemRepository(db)
+	orderRepo := order.NewOrderRepository(db)
+	orderItemRepo := orderitem.NewOrderItemRepository(db)
 
 	// services
 	enumService := enum.NewEnumService(enumRepo)
-	enumValueService := enumvalue.NewEnumValueService(enumValueRepo)
+	enumValueService := enumvalue.NewEnumValueService(enumValueRepo, enumService)
 	personService := person.NewPersonService(personRepo)
 	categoryService := category.NewCategoryService(categoryRepo)
 	productService := product.NewProductService(productRepo, enumService, enumValueService)
 	productMediaService := productmedia.NewProductMediaService(productMediaRepo)
 	cartServices := cart.NewCartService(cartRepo)
-	cartItemServices := cartitem.NewCartItemService(cartItemRepo, enumService, enumValueService)
-	purchaseService := purchase.NewPurchaseService(cartServices, cartItemServices, productService, enumService, enumValueService)
+	cartItemService := cartitem.NewCartItemService(cartItemRepo, enumService, enumValueService, productService)
+	orderItemService := orderitem.NewOrderItemService(orderItemRepo, txManager, enumService, enumValueService, productService, cartItemService)
+	orderService := order.NewOrderService(orderRepo, txManager, enumService, enumValueService, orderItemService)
 
 	// auth
 	keycloakService, err := auth.NewKeycloakService(ctx, appConfig.KeycloakConfig)
@@ -117,8 +129,9 @@ func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
 	categoryHandler := category.NewCategoryHandler(categoryService)
 	productHandler := product.NewProductHandler(productService, enumValueService, categoryService)
 	cartHandler := cart.NewCartHandler(cartServices)
-	cartItemHandler := cartitem.NewCartItemHandler(cartItemServices)
-	purchaseHandler := purchase.NewPurchaseHandler(purchaseService)
+	cartItemHandler := cartitem.NewCartItemHandler(cartItemService)
+	orderItemHandler := orderitem.NewOrderItemHandler(orderItemService)
+	orderHandler := order.NewOrderHandler(orderService, personService)
 
 	// refactor
 	productMediaHandler := productmedia.NewProductMediaHandler(productMediaService, productService, resources.FileService{}, "static/media")
@@ -128,7 +141,8 @@ func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
 		ctx: ctx,
 
 		// database
-		db: db,
+		db:        db,
+		txManager: txManager,
 
 		// repositoriest
 		enumRepo:         enumRepo,
@@ -139,6 +153,8 @@ func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
 		productMediaRepo: productMediaRepo,
 		cartRepo:         cartRepo,
 		cartItemRepo:     cartItemRepo,
+		orderRepo:        orderRepo,
+		orderItemRepo:    orderItemRepo,
 
 		// services
 		enumService:         enumService,
@@ -148,8 +164,9 @@ func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
 		productService:      productService,
 		productMediaService: productMediaService,
 		cartService:         cartServices,
-		cartItemService:     cartItemServices,
-		purchaseService:     purchaseService,
+		cartItemService:     cartItemService,
+		orderItemService:    orderItemService,
+		orderService:        orderService,
 
 		fileService: resources.FileService{},
 
@@ -163,7 +180,8 @@ func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
 		productMediaHandler: productMediaHandler,
 		cartHandler:         cartHandler,
 		cartItemHandler:     cartItemHandler,
-		purchaseHandler:     purchaseHandler,
+		orderHandler:        orderHandler,
+		orderItemHandler:    orderItemHandler,
 
 		// auth
 		authService: keycloakService,
@@ -223,6 +241,14 @@ func (c *AppContainer) GetCartItemRepository() cartitem.CartItemRepository {
 	return c.cartItemRepo
 }
 
+func (c *AppContainer) GetOrderRepository() order.OrderRepository {
+	return c.orderRepo
+}
+
+func (c *AppContainer) GetOrderItemRepository() orderitem.OrderItemRepository {
+	return c.orderItemRepo
+}
+
 // Services
 func (c *AppContainer) GetEnumService() enum.EnumService {
 	return c.enumService
@@ -256,12 +282,16 @@ func (c *AppContainer) GetCartItemService() cartitem.CartItemService {
 	return c.cartItemService
 }
 
-func (c *AppContainer) GetPurchaseService() purchase.PurchaseService {
-	return c.purchaseService
-}
-
 func (c *AppContainer) GetFileService() resources.FileService {
 	return c.fileService
+}
+
+func (c *AppContainer) GetOrderService() order.OrderService {
+	return c.orderService
+}
+
+func (c *AppContainer) GetOrderItemService() orderitem.OrderItemService {
+	return c.orderItemService
 }
 
 // Handlers
@@ -301,8 +331,12 @@ func (c *AppContainer) GetCartItemHandler() *cartitem.CartItemHandler {
 	return c.cartItemHandler
 }
 
-func (c *AppContainer) GetPurchaseHandler() *purchase.PurchaseHandler {
-	return c.purchaseHandler
+func (c *AppContainer) GetOrderHandler() *order.OrderHandler {
+	return c.orderHandler
+}
+
+func (c *AppContainer) GetOrderItemHandler() *orderitem.OrderItemHandler {
+	return c.orderItemHandler
 }
 
 // Auth

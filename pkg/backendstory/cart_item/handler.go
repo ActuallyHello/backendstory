@@ -36,12 +36,12 @@ func NewCartItemHandler(
 // @Security BearerAuth
 // @Param request body CartItemCreateRequest true "Данные для создания элемента корзины"
 // @Success 201 {object} CartItemDTO "Созданный элемент корзины"
-// @Failure 400 {object} ErrorResponse "Ошибка валидации"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 409 {object} ErrorResponse "Элемент корзины уже существует"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
-// @Router /api/v1/cart-items [post]
+// @Failure 400 {object} core.ErrorResponse "Ошибка валидации"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 409 {object} core.ErrorResponse "Элемент корзины уже существует"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /cart-items [post]
 // @OperationId createCartItem
 func (h *CartItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -72,22 +72,22 @@ func (h *CartItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(ToCartItemDTO(cartItem))
 }
 
-// Create создает новый элемент корзины
-// @Summary Создать элемент корзины
-// @Description Создает новый элемент корзины
+// Update обновляет элемент корзины
+// @Summary Обновить элемент корзины
+// @Description Обновляет элемент корзины
 // @Tags CartItems
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param request body CartItemCreateRequest true "Данные для создания элемента корзины"
-// @Success 201 {object} CartItemDTO "Созданный элемент корзины"
-// @Failure 400 {object} ErrorResponse "Ошибка валидации"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 409 {object} ErrorResponse "Элемент корзины уже существует"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
-// @Router /api/v1/cart-items [post]
-// @OperationId createCartItem
+// @Param request body CartItemUpdateRequest true "Данные для обновления элемента корзины"
+// @Success 201 {object} CartItemDTO "Обновление элемента корзины"
+// @Failure 400 {object} core.ErrorResponse "Ошибка валидации"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 409 {object} core.ErrorResponse "Элемент корзины уже существует"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /cart-items [patch]
+// @OperationId updateCartItem
 func (h *CartItemHandler) Update(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -119,6 +119,50 @@ func (h *CartItemHandler) Update(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(ToCartItemDTO(cartItem))
 }
 
+// Delete удаляет элемент корзины
+// @Summary Удалить элемент корзины
+// @Description Удалить элемент корзины
+// @Tags CartItems
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 204 "Успешно удалено"
+// @Failure 400 {object} core.ErrorResponse "Неверный ID"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} core.ErrorResponse "Элемент корзины не найден"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /cart-items [delete]
+// @OperationId createCartItem
+func (h *CartItemHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	reqID := r.PathValue("id")
+	if reqID == "" {
+		core.HandleError(w, r, core.NewLogicalError(nil, cartItemHandlerCode, "Отсуствует ИД параметр"))
+		return
+	}
+	id, err := strconv.Atoi(reqID)
+	if err != nil {
+		core.HandleError(w, r, core.NewLogicalError(err, cartItemHandlerCode, "ИД параметр должен быть числовым!"+err.Error()))
+		return
+	}
+
+	cartItem, err := h.cartItemService.GetByID(ctx, uint(id))
+	if err != nil {
+		core.HandleError(w, r, err)
+		return
+	}
+
+	err = h.cartItemService.Delete(ctx, cartItem)
+	if err != nil {
+		core.HandleError(w, r, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
 // GetById возвращает элемент корзины по ID
 // @Summary Получить элемент корзины по ID
 // @Description Возвращает элемент корзины по указанному идентификатору
@@ -128,24 +172,24 @@ func (h *CartItemHandler) Update(w http.ResponseWriter, r *http.Request) {
 // @Security BearerAuth
 // @Param id path int true "ID элемента корзины"
 // @Success 200 {object} CartItemDTO "Элемент корзины"
-// @Failure 400 {object} ErrorResponse "Неверный ID"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} ErrorResponse "Элемент корзины не найден"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
-// @Router /api/v1/cart-items/{id} [get]
+// @Failure 400 {object} core.ErrorResponse "Неверный ID"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} core.ErrorResponse "Элемент корзины не найден"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /cart-items/{id} [get]
 // @OperationId getCartItemById
 func (h *CartItemHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	reqID := r.PathValue("id")
 	if reqID == "" {
-		core.HandleError(w, r, core.NewLogicalError(nil, cartItemHandlerCode, "ID parameter missing"))
+		core.HandleError(w, r, core.NewLogicalError(nil, cartItemHandlerCode, "Отсуствует ИД параметр"))
 		return
 	}
 	id, err := strconv.Atoi(reqID)
 	if err != nil {
-		core.HandleError(w, r, core.NewLogicalError(err, cartItemHandlerCode, "ID parameter must be integer!"+err.Error()))
+		core.HandleError(w, r, core.NewLogicalError(err, cartItemHandlerCode, "ИД параметр должен быть числовым!"+err.Error()))
 		return
 	}
 
@@ -166,13 +210,13 @@ func (h *CartItemHandler) GetById(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param request body SearchCriteria true "Критерии поиска"
+// @Param request body core.SearchCriteria true "Критерии поиска"
 // @Success 200 {array} CartItemDTO "Список найденных элементов корзины"
-// @Failure 400 {object} ErrorResponse "Ошибка валидации"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
-// @Router /api/v1/cart-items/search [post]
+// @Failure 400 {object} core.ErrorResponse "Ошибка валидации"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /cart-items/search [post]
 // @OperationId searchCartItem
 func (h *CartItemHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -212,24 +256,24 @@ func (h *CartItemHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.R
 // @Security BearerAuth
 // @Param cart_id path int true "ID корзины"
 // @Success 200 {array} CartItemDTO "Список элементов корзины"
-// @Failure 400 {object} ErrorResponse "Неверный ID корзины"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} ErrorResponse "Элементы корзины не найдены"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
-// @Router /api/v1/cart-items/cart/{cart_id} [get]
+// @Failure 400 {object} core.ErrorResponse "Неверный ID корзины"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} core.ErrorResponse "Элементы корзины не найдены"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /cart-items/cart/{cart_id} [get]
 // @OperationId getCartItemByCartId
 func (h *CartItemHandler) GetByCartID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	reqID := r.PathValue("cart_id")
 	if reqID == "" {
-		core.HandleError(w, r, core.NewLogicalError(nil, cartItemHandlerCode, "ID parameter missing"))
+		core.HandleError(w, r, core.NewLogicalError(nil, cartItemHandlerCode, "Отсуствует ИД параметр"))
 		return
 	}
 	id, err := strconv.Atoi(reqID)
 	if err != nil {
-		core.HandleError(w, r, core.NewLogicalError(err, cartItemHandlerCode, "ID parameter must be integer!"+err.Error()))
+		core.HandleError(w, r, core.NewLogicalError(err, cartItemHandlerCode, "ИД параметр должен быть числовым!"+err.Error()))
 		return
 	}
 

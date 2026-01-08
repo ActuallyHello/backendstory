@@ -13,6 +13,11 @@ func (e *NotFoundError) Error() string {
 	return e.Message
 }
 
+func (e *NotFoundError) Is(target error) bool {
+	_, ok := target.(*NotFoundError)
+	return ok
+}
+
 func NewNotFoundError(msg string) *NotFoundError {
 	return &NotFoundError{Message: msg}
 }

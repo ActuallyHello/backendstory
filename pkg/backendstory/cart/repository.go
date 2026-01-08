@@ -27,9 +27,9 @@ func NewCartRepository(db *gorm.DB) *cartRepository {
 // FindByPersonID ищет Cart по коду
 func (r *cartRepository) FindByPersonID(ctx context.Context, personID uint) (Cart, error) {
 	var cart Cart
-	if err := r.GetDB().WithContext(ctx).Where("PERSONID = ?", personID).First(&cart).Error; err != nil {
+	if err := r.GetDB(ctx).Where("PERSONID = ?", personID).First(&cart).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return Cart{}, core.NewNotFoundError("Cart not found by code")
+			return Cart{}, core.NewNotFoundError("Не существует корзины у данного пользователя")
 		}
 		return Cart{}, err
 	}

@@ -45,12 +45,12 @@ func NewProductHandler(
 // @Security BearerAuth
 // @Param request body ProductCreateRequest true "Данные для создания продукта"
 // @Success 201 {object} ProductDTO "Созданный продукт"
-// @Failure 400 {object} ErrorResponse "Ошибка валидации"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 409 {object} ErrorResponse "Продукт с таким кодом уже существует"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
-// @Router /api/v1/products [post]
+// @Failure 400 {object} core.ErrorResponse "Ошибка валидации"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 409 {object} core.ErrorResponse "Продукт с таким кодом уже существует"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /products [post]
 // @OperationId createProduct
 func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -110,10 +110,10 @@ func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Security BearerAuth
 // @Success 200 {array} ProductDTO "Список продуктов"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
-// @Router /api/v1/products [get]
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /products [get]
 // @OperationId getProductAll
 func (h *ProductHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -142,24 +142,24 @@ func (h *ProductHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 // @Security BearerAuth
 // @Param id path int true "ID продукта"
 // @Success 200 {object} ProductDTO "Продукт"
-// @Failure 400 {object} ErrorResponse "Неверный ID"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} ErrorResponse "Продукт не найден"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
-// @Router /api/v1/products/{id} [get]
+// @Failure 400 {object} core.ErrorResponse "Неверный ID"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} core.ErrorResponse "Продукт не найден"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /products/{id} [get]
 // @OperationId getProductById
 func (h *ProductHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	reqID := r.PathValue("id")
 	if reqID == "" {
-		core.HandleError(w, r, core.NewLogicalError(nil, productHandlerCode, "ID parameter missing"))
+		core.HandleError(w, r, core.NewLogicalError(nil, productHandlerCode, "Отсутствует ИД параметр"))
 		return
 	}
 	id, err := strconv.Atoi(reqID)
 	if err != nil {
-		core.HandleError(w, r, core.NewLogicalError(err, productHandlerCode, "ID parameter must be integer!"+err.Error()))
+		core.HandleError(w, r, core.NewLogicalError(err, productHandlerCode, "ИД параметр должен быть числовым! "+err.Error()))
 		return
 	}
 
@@ -182,19 +182,19 @@ func (h *ProductHandler) GetById(w http.ResponseWriter, r *http.Request) {
 // @Security BearerAuth
 // @Param code path string true "Код продукта"
 // @Success 200 {object} ProductDTO "Продукт"
-// @Failure 400 {object} ErrorResponse "Неверный код"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} ErrorResponse "Продукт не найден"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
-// @Router /api/v1/products/code/{code} [get]
+// @Failure 400 {object} core.ErrorResponse "Неверный код"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} core.ErrorResponse "Продукт не найден"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /products/code/{code} [get]
 // @OperationId getProductByCode
 func (h *ProductHandler) GetByCode(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	code := r.PathValue("code")
 	if code == "" {
-		core.HandleError(w, r, core.NewLogicalError(nil, productHandlerCode, "ID parameter missing"))
+		core.HandleError(w, r, core.NewLogicalError(nil, productHandlerCode, "Код параметра обзятаельна"))
 		return
 	}
 
@@ -215,13 +215,13 @@ func (h *ProductHandler) GetByCode(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param request body SearchCriteria true "Критерии поиска"
+// @Param request body core.SearchCriteria true "Критерии поиска"
 // @Success 200 {array} ProductDTO "Список найденных продуктов"
-// @Failure 400 {object} ErrorResponse "Ошибка валидации"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
-// @Router /api/v1/products/search [post]
+// @Failure 400 {object} core.ErrorResponse "Ошибка валидации"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /products/search [post]
 // @OperationId searchProduct
 func (h *ProductHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -261,24 +261,24 @@ func (h *ProductHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Re
 // @Security BearerAuth
 // @Param id path int true "ID продукта"
 // @Success 204 "Успешно удалено"
-// @Failure 400 {object} ErrorResponse "Неверный ID"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} ErrorResponse "Продукт не найден"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
-// @Router /api/v1/products/{id} [delete]
+// @Failure 400 {object} core.ErrorResponse "Неверный ID"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} core.ErrorResponse "Продукт не найден"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /products/{id} [delete]
 // @OperationId deleteProduct
 func (h *ProductHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	reqID := r.PathValue("id")
 	if reqID == "" {
-		core.HandleError(w, r, core.NewLogicalError(nil, productHandlerCode, "ID parameter missing"))
+		core.HandleError(w, r, core.NewLogicalError(nil, productHandlerCode, "Отсуствует ИД параметр"))
 		return
 	}
 	id, err := strconv.Atoi(reqID)
 	if err != nil {
-		core.HandleError(w, r, core.NewLogicalError(err, productHandlerCode, "ID parameter must be integer!"+err.Error()))
+		core.HandleError(w, r, core.NewLogicalError(err, productHandlerCode, "ИД параметр должен быть числвым! "+err.Error()))
 		return
 	}
 
@@ -305,24 +305,24 @@ func (h *ProductHandler) Delete(w http.ResponseWriter, r *http.Request) {
 // @Security BearerAuth
 // @Param category_id path int true "ID категории"
 // @Success 200 {array} ProductDTO "Список продуктов"
-// @Failure 400 {object} ErrorResponse "Неверная категория"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} ErrorResponse "Продукты не найдены"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
-// @Router /api/v1/products/category/{category_id} [get]
+// @Failure 400 {object} core.ErrorResponse "Неверная категория"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} core.ErrorResponse "Продукты не найдены"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /products/category/{category_id} [get]
 // @OperationId getProductByCategoryId
 func (h *ProductHandler) GetByCategoryID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	reqCategoryID := r.PathValue("category_id")
 	if reqCategoryID == "" {
-		core.HandleError(w, r, core.NewLogicalError(nil, productHandlerCode, "ID parameter missing"))
+		core.HandleError(w, r, core.NewLogicalError(nil, productHandlerCode, "Отсуствует ИД категории"))
 		return
 	}
 	categoryID, err := strconv.Atoi(reqCategoryID)
 	if err != nil {
-		core.HandleError(w, r, core.NewLogicalError(err, productHandlerCode, "CategoryID parameter must be integer!"+err.Error()))
+		core.HandleError(w, r, core.NewLogicalError(err, productHandlerCode, "ИД категории должен быть числовым! "+err.Error()))
 		return
 	}
 

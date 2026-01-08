@@ -36,11 +36,11 @@ func NewPersonHandler(
 // @Security BearerAuth
 // @Param request body CreatePersonRequest true "Данные для создания персоны"
 // @Success 201 {object} PersonDTO "Созданная персона"
-// @Failure 400 {object} ErrorResponse "Ошибка валидации"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 409 {object} ErrorResponse "Персона с таким user_login уже существует"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
+// @Failure 400 {object} core.ErrorResponse "Ошибка валидации"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 409 {object} core.ErrorResponse "Персона с таким user_login уже существует"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /persons [post]
 // @OperationId createPerson
 func (h *PersonHandler) Create(w http.ResponseWriter, r *http.Request) {
@@ -81,9 +81,9 @@ func (h *PersonHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Security BearerAuth
 // @Success 200 {array} PersonDTO "Список персон"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /persons [get]
 // @OperationId getPersonAll
 func (h *PersonHandler) GetAll(w http.ResponseWriter, r *http.Request) {
@@ -113,11 +113,11 @@ func (h *PersonHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 // @Security BearerAuth
 // @Param id path int true "ID персоны"
 // @Success 200 {object} PersonDTO "Персона"
-// @Failure 400 {object} ErrorResponse "Неверный ID"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} ErrorResponse "Персона не найдена"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
+// @Failure 400 {object} core.ErrorResponse "Неверный ID"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} core.ErrorResponse "Персона не найдена"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /persons/{id} [get]
 // @OperationId getPersonById
 func (h *PersonHandler) GetById(w http.ResponseWriter, r *http.Request) {
@@ -125,12 +125,12 @@ func (h *PersonHandler) GetById(w http.ResponseWriter, r *http.Request) {
 
 	reqID := r.PathValue("id")
 	if reqID == "" {
-		core.HandleError(w, r, core.NewLogicalError(nil, personHandlerCode, "ID parameter missing"))
+		core.HandleError(w, r, core.NewLogicalError(nil, personHandlerCode, "Отсуствует ИД параметр"))
 		return
 	}
 	id, err := strconv.Atoi(reqID)
 	if err != nil {
-		core.HandleError(w, r, core.NewLogicalError(err, personHandlerCode, "ID parameter must be integer!"+err.Error()))
+		core.HandleError(w, r, core.NewLogicalError(err, personHandlerCode, "ИД параметр должен быть числовым!"+err.Error()))
 		return
 	}
 
@@ -153,11 +153,11 @@ func (h *PersonHandler) GetById(w http.ResponseWriter, r *http.Request) {
 // @Security BearerAuth
 // @Param user_login path string true "Логин пользователя"
 // @Success 200 {object} PersonDTO "Персона"
-// @Failure 400 {object} ErrorResponse "Неверный логин пользователя"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} ErrorResponse "Персона не найдена"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
+// @Failure 400 {object} core.ErrorResponse "Неверный логин пользователя"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} core.ErrorResponse "Персона не найдена"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /persons/user/{user_login} [get]
 // @OperationId getPersonByUserLogin
 func (h *PersonHandler) GetByUserLogin(w http.ResponseWriter, r *http.Request) {
@@ -165,7 +165,7 @@ func (h *PersonHandler) GetByUserLogin(w http.ResponseWriter, r *http.Request) {
 
 	userLogin := r.PathValue("user_login")
 	if userLogin == "" {
-		core.HandleError(w, r, core.NewLogicalError(nil, personHandlerCode, "user_login parameter missing"))
+		core.HandleError(w, r, core.NewLogicalError(nil, personHandlerCode, "Отсуствует логин пользователя"))
 		return
 	}
 
@@ -189,11 +189,11 @@ func (h *PersonHandler) GetByUserLogin(w http.ResponseWriter, r *http.Request) {
 // @Param id path int true "ID персоны"
 // @Param soft query boolean false "Флаг мягкого удаления (true/false)" default(true)
 // @Success 204 "Успешно удалено"
-// @Failure 400 {object} ErrorResponse "Неверный ID или параметр soft"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} ErrorResponse "Персона не найдена"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
+// @Failure 400 {object} core.ErrorResponse "Неверный ID или параметр soft"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} core.ErrorResponse "Персона не найдена"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /persons/{id} [delete]
 // @OperationId deletePerson
 func (h *PersonHandler) Delete(w http.ResponseWriter, r *http.Request) {
@@ -201,12 +201,12 @@ func (h *PersonHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	reqID := r.PathValue("id")
 	if reqID == "" {
-		core.HandleError(w, r, core.NewLogicalError(nil, personHandlerCode, "ID parameter missing"))
+		core.HandleError(w, r, core.NewLogicalError(nil, personHandlerCode, "Отсуствует ИД параметр"))
 		return
 	}
 	id, err := strconv.Atoi(reqID)
 	if err != nil {
-		core.HandleError(w, r, core.NewLogicalError(err, personHandlerCode, "ID parameter must be integer!"+err.Error()))
+		core.HandleError(w, r, core.NewLogicalError(err, personHandlerCode, "ИД параметр должен быть числовым! "+err.Error()))
 		return
 	}
 
@@ -216,7 +216,7 @@ func (h *PersonHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	if softParam != "" {
 		soft, err := strconv.ParseBool(softParam)
 		if err != nil {
-			core.HandleError(w, r, core.NewLogicalError(err, personHandlerCode, "soft parameter must be boolean!"+err.Error()))
+			core.HandleError(w, r, core.NewLogicalError(err, personHandlerCode, "Признак мягкого удаления должен быть булевым!"+err.Error()))
 			return
 		}
 		softDelete = soft
@@ -243,12 +243,12 @@ func (h *PersonHandler) Delete(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param request body SearchCriteria true "Критерии поиска"
+// @Param request body core.SearchCriteria true "Критерии поиска"
 // @Success 200 {array} PersonDTO "Список найденных людей"
-// @Failure 400 {object} ErrorResponse "Ошибка валидации"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
+// @Failure 400 {object} core.ErrorResponse "Ошибка валидации"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /persons/search [post]
 // @OperationId searchPerson
 func (h *PersonHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Request) {

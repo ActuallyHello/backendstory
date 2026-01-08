@@ -39,14 +39,14 @@ func (s *BaseServiceImpl[T]) GetRepo() BaseRepository[T] {
 
 // GetByID получает сущность по ID
 func (s *BaseServiceImpl[T]) GetByID(ctx context.Context, id uint) (T, error) {
-	var zero T
+	var empty T
 	entity, err := s.repo.FindByID(ctx, id)
 	if err != nil {
 		slog.Error("GetByID failed", "error", err, "id", id, "entity", entity.TableName())
 		if errors.Is(err, &NotFoundError{}) {
-			return zero, NewLogicalError(err, entity.TableName()+serviceCodeSuffix, "ошибка при получении: "+zero.LocalTableName())
+			return empty, NewLogicalError(err, entity.TableName()+serviceCodeSuffix, "Ошибка при получении сущности по ID "+empty.LocalTableName())
 		}
-		return zero, NewTechnicalError(err, entity.TableName()+serviceCodeSuffix, err.Error())
+		return empty, NewTechnicalError(err, entity.TableName()+serviceCodeSuffix, err.Error())
 	}
 	return entity, nil
 }
@@ -57,7 +57,7 @@ func (s *BaseServiceImpl[T]) GetAll(ctx context.Context) ([]T, error) {
 	entities, err := s.repo.FindAll(ctx)
 	if err != nil {
 		slog.Error("GetAll failed", "error", err)
-		return nil, NewTechnicalError(err, entity.TableName()+serviceCodeSuffix, "ошибка при получении: "+entity.TableName())
+		return nil, NewTechnicalError(err, entity.TableName()+serviceCodeSuffix, "Ошибка при получении списка сущностей "+entity.TableName())
 	}
 	return entities, nil
 }
@@ -68,7 +68,7 @@ func (s *BaseServiceImpl[T]) GetWithSearchCriteria(ctx context.Context, criteria
 	entities, err := s.repo.FindWithSearchCriteria(ctx, criteria)
 	if err != nil {
 		slog.Error("GetWithSearchCriteria failed", "error", err)
-		return nil, NewTechnicalError(err, entity.TableName()+serviceCodeSuffix, "")
+		return nil, NewTechnicalError(err, entity.TableName()+serviceCodeSuffix, "Ошибка при получении по заданным параметрам сущностей "+entity.LocalTableName())
 	}
 	return entities, nil
 }

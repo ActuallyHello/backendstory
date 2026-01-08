@@ -28,9 +28,9 @@ func NewCategoryRepository(db *gorm.DB) *categoryRepository {
 // FindByCode ищет Enum по коду
 func (r *categoryRepository) FindByCode(ctx context.Context, code string) (Category, error) {
 	var category Category
-	if err := r.GetDB().WithContext(ctx).Where("CODE = ?", code).First(&category).Error; err != nil {
+	if err := r.GetDB(ctx).Where("CODE = ?", code).First(&category).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return Category{}, core.NewNotFoundError("category not found by code")
+			return Category{}, core.NewNotFoundError("Категория не найдена по переданному коду")
 		}
 		return Category{}, err
 	}
@@ -39,7 +39,7 @@ func (r *categoryRepository) FindByCode(ctx context.Context, code string) (Categ
 
 func (r *categoryRepository) FindByCategoryID(ctx context.Context, categoryID uint) ([]Category, error) {
 	var categories []Category
-	if err := r.GetDB().WithContext(ctx).Where("CATEGORYID = ?", categoryID).Find(&categories).Error; err != nil {
+	if err := r.GetDB(ctx).Where("CATEGORYID = ?", categoryID).Find(&categories).Error; err != nil {
 		return nil, err
 	}
 	return categories, nil

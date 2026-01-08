@@ -16,7 +16,6 @@ type CartService interface {
 	core.BaseService[Cart]
 
 	Create(ctx context.Context, cart Cart) (Cart, error)
-	Update(ctx context.Context, cart Cart) (Cart, error)
 	Delete(ctx context.Context, cart Cart) error
 
 	GetByPersonID(ctx context.Context, personID uint) (Cart, error)
@@ -42,25 +41,10 @@ func (s *cartService) Create(ctx context.Context, cart Cart) (Cart, error) {
 	created, err := s.GetRepo().Create(ctx, cart)
 	if err != nil {
 		slog.Error("Create cart failed", "error", err, "personID", cart.PersonID)
-		return Cart{}, core.NewTechnicalError(err, cartServiceCode, err.Error())
+		return Cart{}, core.NewTechnicalError(err, cartServiceCode, "Ошибка при создании корзины")
 	}
 	slog.Info("Cart created", "personID", created.PersonID)
 	return created, nil
-}
-
-// Update обновляет существующую Cart
-func (s *cartService) Update(ctx context.Context, cart Cart) (Cart, error) {
-	existing, err := s.GetRepo().FindByID(ctx, cart.ID)
-	if err != nil {
-		return Cart{}, err
-	}
-
-	updated, err := s.GetRepo().Update(ctx, existing)
-	if err != nil {
-		slog.Error("Update cart failed", "error", err, "personID", cart.PersonID)
-		return Cart{}, err
-	}
-	return updated, nil
 }
 
 // Delete удаляет Cart (мягко или полностью)
@@ -68,7 +52,7 @@ func (s *cartService) Delete(ctx context.Context, cart Cart) error {
 	err := s.GetRepo().Delete(ctx, cart)
 	if err != nil {
 		slog.Error("Failed to delete cart", "error", err, "id", cart.ID)
-		return core.NewTechnicalError(err, cartServiceCode, err.Error())
+		return core.NewTechnicalError(err, cartServiceCode, "Ошибка при удалении пользователя")
 	}
 	slog.Info("Deleted cart", "personID", cart.PersonID)
 	return nil
@@ -82,7 +66,7 @@ func (s *cartService) GetByPersonID(ctx context.Context, personID uint) (Cart, e
 		if errors.Is(err, &core.NotFoundError{}) {
 			return Cart{}, core.NewLogicalError(err, cartServiceCode, err.Error())
 		}
-		return Cart{}, core.NewTechnicalError(err, cartServiceCode, err.Error())
+		return Cart{}, core.NewTechnicalError(err, cartServiceCode, "Ошибка при поиске корзины у клиента")
 	}
 	return cart, nil
 }

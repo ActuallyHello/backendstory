@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 	"database/sql"
+	"log/slog"
 
 	"gorm.io/gorm"
 )
@@ -56,7 +57,9 @@ func (txm *gormTxManager) DoWithSettings(ctx context.Context, txSettings TxSetti
 
 	defer func() {
 		if p := recover(); p != nil {
-			tx.Rollback()
+			if rollbackErr := tx.Rollback().Error; rollbackErr != nil {
+				slog.Error("failed to rollback on panic", "err", rollbackErr)
+			}
 			panic(p)
 		}
 	}()
@@ -64,7 +67,9 @@ func (txm *gormTxManager) DoWithSettings(ctx context.Context, txSettings TxSetti
 	txCtx := context.WithValue(ctx, TxCtxKeyCode, tx)
 	err := f(txCtx)
 	if err != nil {
-		tx.Rollback()
+		if rollbackErr := tx.Rollback().Error; rollbackErr != nil {
+			slog.Error("failed to rollback on panic", "err", rollbackErr)
+		}
 		return err
 	}
 	if err := tx.Commit().Error; err != nil {

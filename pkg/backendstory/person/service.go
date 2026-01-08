@@ -4,11 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"log/slog"
 	"time"
 
-	"github.com/ActuallyHello/backendstory/internal/store/repositories/common"
 	"github.com/ActuallyHello/backendstory/pkg/core"
 )
 
@@ -49,14 +47,14 @@ func (s *personService) Create(ctx context.Context, person Person) (Person, erro
 	}
 	if existingByUserLogin.ID > 0 {
 		slog.Error("Person already exists for this user!", "error", err, "user_login", person.UserLogin)
-		return Person{}, core.NewLogicalError(nil, personServiceCode, fmt.Sprintf("Person with user_login = %s already exists!", person.UserLogin))
+		return Person{}, core.NewLogicalError(nil, personServiceCode, "Клиент уже существует")
 	}
 
 	// Создаем запись
 	created, err := s.personRepo.Create(ctx, person)
 	if err != nil {
 		slog.Error("Create person failed", "error", err, "user_login", person.UserLogin, "phone", person.Phone)
-		return Person{}, core.NewTechnicalError(err, personServiceCode, err.Error())
+		return Person{}, core.NewTechnicalError(err, personServiceCode, "Ошибка при создании клиента")
 	}
 	slog.Info("Person created", "firstname", created.Firstname, "lastname", created.Lastname, "user_login", created.UserLogin)
 	return created, nil
@@ -73,7 +71,7 @@ func (s *personService) Update(ctx context.Context, person Person) (Person, erro
 	updated, err := s.personRepo.Update(ctx, person)
 	if err != nil {
 		slog.Error("Update person failed", "error", err, "personID", person.ID, "user_login", person.UserLogin)
-		return Person{}, core.NewTechnicalError(err, personServiceCode, err.Error())
+		return Person{}, core.NewTechnicalError(err, personServiceCode, "Ошибка при обновлении клиента")
 	}
 	return updated, nil
 }
@@ -93,7 +91,7 @@ func (s *personService) Delete(ctx context.Context, person Person, soft bool) er
 		err := s.personRepo.Delete(ctx, person)
 		if err != nil {
 			slog.Error("Failed to delete person", "error", err, "personID", person.ID, "soft", soft)
-			return core.NewTechnicalError(err, personServiceCode, err.Error())
+			return core.NewTechnicalError(err, personServiceCode, "Ошибка при удалении клиента")
 		}
 	}
 	slog.Info("Deleted person", "personID", person.ID, "soft", soft)
@@ -105,10 +103,10 @@ func (s *personService) GetByUserLogin(ctx context.Context, userLogin string) (P
 	person, err := s.personRepo.FindByUserLogin(ctx, userLogin)
 	if err != nil {
 		slog.Error("Failed to find person by user ID", "error", err, "user_login", userLogin)
-		if errors.Is(err, &common.NotFoundError{}) {
+		if errors.Is(err, &core.NotFoundError{}) {
 			return Person{}, core.NewLogicalError(err, personServiceCode, err.Error())
 		}
-		return Person{}, core.NewTechnicalError(err, personServiceCode, err.Error())
+		return Person{}, core.NewTechnicalError(err, personServiceCode, "Ошибка при поиске клеинта по логину пользователя")
 	}
 	return person, nil
 }

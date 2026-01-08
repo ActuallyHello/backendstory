@@ -3,7 +3,6 @@ package product
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log/slog"
 
 	"github.com/ActuallyHello/backendstory/pkg/backendstory/enum"
@@ -71,7 +70,7 @@ func (s *productService) Create(ctx context.Context, product Product) (Product, 
 	}
 	if len(products) > 0 {
 		slog.Error("Product already exists!", "error", err, "code", product.Code, "sku", product.Sku)
-		return Product{}, core.NewLogicalError(nil, productServiceCode, fmt.Sprintf("Product with code = %s already exists!", product.Code))
+		return Product{}, core.NewLogicalError(nil, productServiceCode, "Продукт уже существует")
 	}
 
 	// Создаем запись
@@ -91,28 +90,10 @@ func (s *productService) Update(ctx context.Context, product Product) (Product, 
 		return Product{}, err
 	}
 
-	if existing.Code != product.Code {
-		existingByCode, err := s.GetByCode(ctx, product.Code)
-		if err != nil && errors.Is(err, &core.TechnicalError{}) {
-			return Product{}, err
-		}
-		if existingByCode.ID > 0 {
-			slog.Error("Product already exists!", "error", err, "code", product.Code)
-			return Product{}, core.NewLogicalError(err, productServiceCode, fmt.Sprintf("Product with code = %s already exists!", product.Code))
-		}
-	}
-
-	if product.Code != "" {
-		existing.Code = product.Code
-	}
-	if product.Label != "" {
-		existing.Label = product.Label
-	}
-
 	updated, err := s.GetRepo().Update(ctx, existing)
 	if err != nil {
 		slog.Error("Update product failed", "error", err, "code", product.Code)
-		return Product{}, err
+		return Product{}, core.NewTechnicalError(err, productServiceCode, "Ошибка при обновлении продукта")
 	}
 	return updated, nil
 }
@@ -122,7 +103,7 @@ func (s *productService) Delete(ctx context.Context, product Product) error {
 	err := s.GetRepo().Delete(ctx, product)
 	if err != nil {
 		slog.Error("Failed to delete product", "error", err, "id", product.ID)
-		return core.NewTechnicalError(err, productServiceCode, err.Error())
+		return core.NewTechnicalError(err, productServiceCode, "Ошибка при удалении продукта")
 	}
 	slog.Info("Deleted product", "code", product.Code)
 	return nil
@@ -136,7 +117,7 @@ func (s *productService) GetByCode(ctx context.Context, code string) (Product, e
 		if errors.Is(err, &core.NotFoundError{}) {
 			return Product{}, core.NewLogicalError(err, productServiceCode, err.Error())
 		}
-		return Product{}, core.NewTechnicalError(err, productServiceCode, err.Error())
+		return Product{}, core.NewTechnicalError(err, productServiceCode, "Ошибка при поиске продукта по переданному коду")
 	}
 	return product, nil
 }

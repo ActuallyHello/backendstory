@@ -25,7 +25,7 @@ func NewProductMediaRepository(db *gorm.DB) *productMediaRepository {
 
 func (r *productMediaRepository) FindByProductID(ctx context.Context, productID uint) ([]ProductMedia, error) {
 	var productMedia []ProductMedia
-	if err := r.GetDB().WithContext(ctx).Where("PRODUCTID = ?", productID).Find(&productMedia).Error; err != nil {
+	if err := r.GetDB(ctx).Where("PRODUCTID = ?", productID).Find(&productMedia).Error; err != nil {
 		return nil, err
 	}
 	return productMedia, nil

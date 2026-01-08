@@ -38,8 +38,8 @@ func NewAuthHandler(
 // @Produce json
 // @Param request body RegisterUserRequest true "Данные для регистрации"
 // @Success 200 {object} LoginResponse "Данные для входа"
-// @Failure 409 {object} ErrorResponse "Пользователь уже существует"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
+// @Failure 409 {object} core.ErrorResponse "Пользователь уже существует"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /register [post]
 // @OperationId registerUser
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
@@ -58,7 +58,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 
 	// check if user with same email exists
 	if _, err := h.authService.GetUserByEmail(ctx, req.Email); err == nil {
-		core.HandleError(w, r, core.NewLogicalError(nil, authHandlerCode, "User with this email already exists!"))
+		core.HandleError(w, r, core.NewLogicalError(nil, authHandlerCode, "Пользователь с таким email уже зарегистрирован!"))
 		return
 	}
 
@@ -85,14 +85,14 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	loginResponse := LoginResponse{
+	tokenResponse := LoginResponse{
 		Token:    token,
 		Username: tokenUserInfo.Username,
 		Roles:    tokenUserInfo.Roles,
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(loginResponse)
+	json.NewEncoder(w).Encode(tokenResponse)
 }
 
 // Login выполняет аутентификацию пользователя
@@ -103,9 +103,9 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Param request body LoginRequest true "Данные для входа"
 // @Success 200 {object} LoginResponse "Данные для входа"
-// @Failure 400 {object} ErrorResponse "Ошибка валидации"
-// @Failure 401 {object} ErrorResponse "Неверные учетные данные"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
+// @Failure 400 {object} core.ErrorResponse "Ошибка валидации"
+// @Failure 401 {object} core.ErrorResponse "Неверные учетные данные"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /login [post]
 // @OperationId loginUser
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
@@ -134,14 +134,14 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	loginResponse := LoginResponse{
+	tokenResponse := LoginResponse{
 		Token:    token,
 		Username: tokenUserInfo.Username,
 		Roles:    tokenUserInfo.Roles,
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(loginResponse)
+	json.NewEncoder(w).Encode(tokenResponse)
 }
 
 // GetRoles возвращает список всех ролей
@@ -152,9 +152,9 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Security BearerAuth
 // @Success 200 {array} string "Список ролей"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /auth/roles [get]
 // @OperationId getRoles
 func (h *AuthHandler) GetRoles(w http.ResponseWriter, r *http.Request) {
@@ -179,11 +179,11 @@ func (h *AuthHandler) GetRoles(w http.ResponseWriter, r *http.Request) {
 // @Security BearerAuth
 // @Param username path string true "Имя пользователя"
 // @Success 200 {array} string "Список ролей пользователя"
-// @Failure 400 {object} ErrorResponse "Неверное имя пользователя"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} ErrorResponse "Пользователь не найден"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
+// @Failure 400 {object} core.ErrorResponse "Неверное имя пользователя"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} core.ErrorResponse "Пользователь не найден"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /auth/users/{username}/roles [get]
 // @OperationId getUserRoles
 func (h *AuthHandler) GetUserRoles(w http.ResponseWriter, r *http.Request) {
@@ -191,7 +191,7 @@ func (h *AuthHandler) GetUserRoles(w http.ResponseWriter, r *http.Request) {
 
 	username := r.PathValue("username")
 	if username == "" {
-		core.HandleError(w, r, core.NewLogicalError(nil, authHandlerCode, "username parameter missing"))
+		core.HandleError(w, r, core.NewLogicalError(nil, authHandlerCode, "Логин пользователя отсуствует"))
 		return
 	}
 
@@ -213,9 +213,9 @@ func (h *AuthHandler) GetUserRoles(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Security BearerAuth
 // @Success 200 {array} UserDTO "Список пользователей"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /auth/users [get]
 // @OperationId getUsers
 func (h *AuthHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
@@ -240,11 +240,11 @@ func (h *AuthHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 // @Security BearerAuth
 // @Param username path string true "Имя пользователя"
 // @Success 200 {object} UserDTO "Пользователь"
-// @Failure 400 {object} ErrorResponse "Неверное имя пользователя"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 404 {object} ErrorResponse "Пользователь не найден"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
+// @Failure 400 {object} core.ErrorResponse "Неверное имя пользователя"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} core.ErrorResponse "Пользователь не найден"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /auth/users/{username} [get]
 // @OperationId getUser
 func (h *AuthHandler) GetUser(w http.ResponseWriter, r *http.Request) {
@@ -252,7 +252,7 @@ func (h *AuthHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 
 	username := r.PathValue("username")
 	if username == "" {
-		core.HandleError(w, r, core.NewLogicalError(nil, authHandlerCode, "username parameter missing"))
+		core.HandleError(w, r, core.NewLogicalError(nil, authHandlerCode, "Логин пользователя отсуствует"))
 		return
 	}
 
@@ -274,10 +274,10 @@ func (h *AuthHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Security BearerAuth
 // @Success 200 {object} TokenUserInfo "Информация о пользователе из токена"
-// @Failure 400 {object} ErrorResponse "Неверный формат запроса"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
+// @Failure 400 {object} core.ErrorResponse "Неверный формат запроса"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /auth/token [get]
 // @OperationId getHeaderTokenInfo
 func (h *AuthHandler) GetHeaderTokenInfo(w http.ResponseWriter, r *http.Request) {
@@ -285,7 +285,7 @@ func (h *AuthHandler) GetHeaderTokenInfo(w http.ResponseWriter, r *http.Request)
 
 	authHeader := r.Header.Get(authorization)
 	if authHeader == "" {
-		core.HandleError(w, r, core.NewAccessError(nil, authHandlerCode, "Missing authorization token!"))
+		core.HandleError(w, r, core.NewAccessError(nil, authHandlerCode, "Отсуствует токен авторизации!"))
 		return
 	}
 
@@ -309,10 +309,10 @@ func (h *AuthHandler) GetHeaderTokenInfo(w http.ResponseWriter, r *http.Request)
 // @Security BearerAuth
 // @Param request body TokenRequest true "Токен для проверки"
 // @Success 200 {object} TokenUserInfo "Информация о пользователе из токена"
-// @Failure 400 {object} ErrorResponse "Неверный формат запроса"
-// @Failure 401 {object} ErrorResponse "Не авторизован"
-// @Failure 403 {object} ErrorResponse "Доступ запрещен"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
+// @Failure 400 {object} core.ErrorResponse "Неверный формат запроса"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /auth/token [post]
 // @OperationId getBodyTokenInfo
 func (h *AuthHandler) GetBodyTokenInfo(w http.ResponseWriter, r *http.Request) {

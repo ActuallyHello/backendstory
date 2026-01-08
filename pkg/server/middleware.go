@@ -23,23 +23,23 @@ func AuthMiddleware(authService auth.AuthService, requiredRoles ...string) func(
 
 			authHeader := r.Header.Get(authorization)
 			if authHeader == "" {
-				core.HandleError(w, r, core.NewAccessError(nil, authMiddleware, "Missing authorization token!"))
+				core.HandleError(w, r, core.NewAccessError(nil, authMiddleware, "Не указан токен авторизации"))
 				return
 			}
 
 			token := strings.TrimPrefix(authHeader, bearer)
 			tokenUserInfo, err := authService.GetTokenUserInfo(ctx, token)
-			roles := tokenUserInfo.Roles
 			if err != nil {
-				core.HandleError(w, r, core.NewAccessError(err, authMiddleware, "Couldn't determinate roles for user!"))
+				core.HandleError(w, r, core.NewAccessError(err, authMiddleware, "Ошибка при получении ролей пользователя"))
 				return
 			}
+			roles := tokenUserInfo.Roles
 
 			ctx = context.WithValue(ctx, auth.TokenCtxKey, token)
 			ctx = context.WithValue(ctx, auth.UserInfoCtxKey, tokenUserInfo)
 
 			if !hasRequiredRole(roles, requiredRoles) {
-				core.HandleError(w, r, core.NewAccessError(nil, authMiddleware, "forbiden for user"))
+				core.HandleError(w, r, core.NewAccessError(nil, authMiddleware, "Для данной роли доступ запрещён"))
 				return
 			}
 

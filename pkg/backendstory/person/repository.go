@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 
-	"github.com/ActuallyHello/backendstory/internal/store/repositories/common"
 	"github.com/ActuallyHello/backendstory/pkg/core"
 	"gorm.io/gorm"
 )
@@ -28,9 +27,9 @@ func NewPersonRepository(db *gorm.DB) *personRepository {
 // FindByUserID ищет Person по UserID (отношение 1:1)
 func (r *personRepository) FindByUserLogin(ctx context.Context, userLogin string) (Person, error) {
 	var person Person
-	if err := r.GetDB().WithContext(ctx).Where("USERID = ?", userLogin).First(&person).Error; err != nil {
+	if err := r.GetDB(ctx).Where("USERLOGIN = ?", userLogin).First(&person).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return Person{}, common.NewNotFoundError("person not found by user login")
+			return Person{}, core.NewNotFoundError("Клиент не найден по заданному логину")
 		}
 		return Person{}, err
 	}

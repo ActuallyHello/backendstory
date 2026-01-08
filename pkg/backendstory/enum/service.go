@@ -5,7 +5,6 @@ import (
 	"errors"
 	"log/slog"
 
-	"github.com/ActuallyHello/backendstory/internal/store/repositories/common"
 	"github.com/ActuallyHello/backendstory/pkg/core"
 )
 
@@ -44,13 +43,13 @@ func (s *enumService) Create(ctx context.Context, enum Enum) (Enum, error) {
 	}
 	if existing.ID > 0 {
 		slog.Error("Enum already exists!", "error", err, "code", enum.Code)
-		return Enum{}, core.NewLogicalError(nil, enumServiceCode, "перечисление уже существует")
+		return Enum{}, core.NewLogicalError(nil, enumServiceCode, "Перечисление уже существует")
 	}
 
 	created, err := s.GetRepo().Create(ctx, enum)
 	if err != nil {
 		slog.Error("Create enum failed", "error", err, "code", enum.Code)
-		return Enum{}, core.NewTechnicalError(err, enumServiceCode, "ошибка при создании перечисления")
+		return Enum{}, core.NewTechnicalError(err, enumServiceCode, "Ошибка при создании перечисления")
 	}
 	slog.Info("Enum created", "code", created.Code)
 	return created, nil
@@ -62,24 +61,10 @@ func (s *enumService) Update(ctx context.Context, enum Enum) (Enum, error) {
 		return Enum{}, err
 	}
 
-	if existing.Code != enum.Code {
-		existingByCode, err := s.GetByCode(ctx, enum.Code)
-		if err != nil && errors.Is(err, &core.TechnicalError{}) {
-			return Enum{}, err
-		}
-		if existingByCode.ID > 0 {
-			slog.Error("Enum already exists!", "error", err, "code", enum.Code)
-			return Enum{}, core.NewLogicalError(err, enumServiceCode, "перечесление уже существует")
-		}
-	}
-
-	existing.Label = enum.Label
-	existing.Code = enum.Code
-
 	updated, err := s.GetRepo().Update(ctx, existing)
 	if err != nil {
 		slog.Error("Update enum failed", "error", err, "code", enum.Code)
-		return Enum{}, err
+		return Enum{}, core.NewTechnicalError(err, enumServiceCode, "Ошибка при обновлении перечисления")
 	}
 	return updated, nil
 }
@@ -88,7 +73,7 @@ func (s *enumService) Delete(ctx context.Context, enum Enum) error {
 	err := s.GetRepo().Delete(ctx, enum)
 	if err != nil {
 		slog.Error("Failed to delete enum", "error", err, "id", enum.ID)
-		return core.NewTechnicalError(err, enumServiceCode, "ошибка в удалении перечисления")
+		return core.NewTechnicalError(err, enumServiceCode, "Ошибка при удалении перечисления")
 	}
 	slog.Info("Deleted enum", "code", enum.Code)
 	return nil
@@ -98,10 +83,10 @@ func (s *enumService) GetByCode(ctx context.Context, code string) (Enum, error) 
 	enum, err := s.enumRepo.FindByCode(ctx, code)
 	if err != nil {
 		slog.Error("Failed to find enum by code", "error", err, "code", code)
-		if errors.Is(err, &common.NotFoundError{}) {
+		if errors.Is(err, &core.NotFoundError{}) {
 			return Enum{}, core.NewLogicalError(err, enumServiceCode, err.Error())
 		}
-		return Enum{}, core.NewTechnicalError(err, enumServiceCode, "ошибка при получении перечисления по коду")
+		return Enum{}, core.NewTechnicalError(err, enumServiceCode, "Ошибка при получении перечисления по коду")
 	}
 	return enum, nil
 }
