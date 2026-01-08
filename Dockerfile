@@ -10,7 +10,7 @@ RUN go install github.com/pressly/goose/v3/cmd/goose@latest
 
 COPY . .
 
-RUN swag init -g ./cmd/server/main.go -o ./docs --parseDependency --parseInternal
+RUN swag init -g ./cmd/server/main.go -o ./docs --parseDependency
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/server
 
 # Финальный образ

@@ -27,6 +27,23 @@ func NewOrderItemHandler(
 	}
 }
 
+// Create создает новый элемент заказа
+// @Summary Создать элемент заказа
+// @Description Создает новый элемент заказа, связывая товар из корзины с заказом
+// @Tags OrderItems
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body OrderItemCreateRequest true "Данные для создания элемента заказа"
+// @Success 201 {object} OrderItemDTO "Созданный элемент заказа"
+// @Failure 400 {object} core.ErrorResponse "Неверный запрос"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 409 {object} core.ErrorResponse "Конфликт (элемент заказа уже существует)"
+// @Failure 422 {object} core.ValidationErrorResponse "Ошибка валидации"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /order-items [post]
+// @OperationId createOrderItem
 func (h *OrderItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -55,12 +72,30 @@ func (h *OrderItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(ToOrderItemDTO(orderItem))
 }
 
+// ChangeStatus изменяет статус элемента заказа
+// @Summary Изменить статус элемента заказа
+// @Description Изменяет статус элемента заказа (например, готов к отгрузке, отгружен и т.д.)
+// @Tags OrderItems
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "ID элемента заказа"
+// @Param status path string true "Новый статус элемента заказа (pending, ready_to_ship, shipped, delivered, cancelled)"
+// @Success 201 {object} OrderItemDTO "Обновленный элемент заказа"
+// @Failure 400 {object} core.ErrorResponse "Неверный запрос или статус"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} core.ErrorResponse "Элемент заказа не найден"
+// @Failure 409 {object} core.ErrorResponse "Конфликт статусов"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /order-items/{id}/status/{status} [patch]
+// @OperationId changeOrderItemStatus
 func (h *OrderItemHandler) ChangeStatus(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	reqID := r.PathValue("id")
 	if reqID == "" {
-		core.HandleError(w, r, core.NewLogicalError(nil, orderItemHandlerCode, "Отсуствует ИД параметр"))
+		core.HandleError(w, r, core.NewLogicalError(nil, orderItemHandlerCode, "Отсутствует ИД параметр"))
 		return
 	}
 	id, err := strconv.Atoi(reqID)
@@ -70,11 +105,11 @@ func (h *OrderItemHandler) ChangeStatus(w http.ResponseWriter, r *http.Request) 
 	}
 	status := r.PathValue("status")
 	if reqID == "" {
-		core.HandleError(w, r, core.NewLogicalError(nil, orderItemHandlerCode, "Отсуствует действие к заказу"))
+		core.HandleError(w, r, core.NewLogicalError(nil, orderItemHandlerCode, "Отсутствует действие к элементу заказа"))
 		return
 	}
 	if status == "" {
-		core.HandleError(w, r, core.NewLogicalError(err, orderItemHandlerCode, "Параметр действия над заказом пустой!"))
+		core.HandleError(w, r, core.NewLogicalError(err, orderItemHandlerCode, "Параметр действия над элементом заказа пустой!"))
 		return
 	}
 
@@ -94,12 +129,29 @@ func (h *OrderItemHandler) ChangeStatus(w http.ResponseWriter, r *http.Request) 
 	json.NewEncoder(w).Encode(ToOrderItemDTO(orderItem))
 }
 
+// Delete удаляет элемент заказа
+// @Summary Удалить элемент заказа
+// @Description Удаляет элемент заказа по ID (только для элементов в определенных статусах)
+// @Tags OrderItems
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "ID элемента заказа"
+// @Success 204 "Элемент заказа успешно удален"
+// @Failure 400 {object} core.ErrorResponse "Неверный ID элемента заказа"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} core.ErrorResponse "Элемент заказа не найден"
+// @Failure 409 {object} core.ErrorResponse "Нельзя удалить элемент заказа в текущем статусе"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /order-items/{id} [delete]
+// @OperationId deleteOrderItem
 func (h *OrderItemHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	reqID := r.PathValue("id")
 	if reqID == "" {
-		core.HandleError(w, r, core.NewLogicalError(nil, orderItemHandlerCode, "Отсуствует ИД параметр"))
+		core.HandleError(w, r, core.NewLogicalError(nil, orderItemHandlerCode, "Отсутствует ИД параметр"))
 		return
 	}
 	id, err := strconv.Atoi(reqID)
@@ -123,12 +175,28 @@ func (h *OrderItemHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// GetById возвращает элемент заказа по ID
+// @Summary Получить элемент заказа по ID
+// @Description Возвращает элемент заказа по указанному идентификатору
+// @Tags OrderItems
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "ID элемента заказа"
+// @Success 200 {object} OrderItemDTO "Элемент заказа"
+// @Failure 400 {object} core.ErrorResponse "Неверный ID элемента заказа"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} core.ErrorResponse "Элемент заказа не найден"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /order-items/{id} [get]
+// @OperationId getOrderItemById
 func (h *OrderItemHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	reqID := r.PathValue("id")
 	if reqID == "" {
-		core.HandleError(w, r, core.NewLogicalError(nil, orderItemHandlerCode, "Отсуствует ИД параметр"))
+		core.HandleError(w, r, core.NewLogicalError(nil, orderItemHandlerCode, "Отсутствует ИД параметр"))
 		return
 	}
 	id, err := strconv.Atoi(reqID)
@@ -147,6 +215,22 @@ func (h *OrderItemHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(ToOrderItemDTO(orderItem))
 }
 
+// GetWithSearchCriteria возвращает список элементов заказа по критериям поиска
+// @Summary Поиск элементов заказа
+// @Description Возвращает список элементов заказа по указанным критериям поиска с пагинацией
+// @Tags OrderItems
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body core.SearchCriteria true "Критерии поиска"
+// @Success 200 {array} OrderItemDTO "Список элементов заказа"
+// @Failure 400 {object} core.ErrorResponse "Неверные критерии поиска"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 422 {object} core.ValidationErrorResponse "Ошибка валидации"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /order-items/search [post]
+// @OperationId searchOrderItems
 func (h *OrderItemHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -176,6 +260,21 @@ func (h *OrderItemHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.
 	json.NewEncoder(w).Encode(dtos)
 }
 
+// GetByOrderID возвращает элементы заказа по ID заказа
+// @Summary Получить элементы заказа
+// @Description Возвращает список элементов заказа по ID заказа
+// @Tags OrderItems
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param order_id path int true "ID заказа"
+// @Success 200 {array} OrderItemDTO "Список элементов заказа"
+// @Failure 400 {object} core.ErrorResponse "Неверный ID заказа"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /order-items/order/{order_id} [get]
+// @OperationId getOrderItemsByOrderId
 func (h *OrderItemHandler) GetByOrderID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
