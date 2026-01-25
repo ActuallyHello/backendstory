@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
 	"slices"
 
 	cartitem "github.com/ActuallyHello/backendstory/pkg/backendstory/cart_item"
@@ -70,20 +69,16 @@ func (s *orderItemService) Create(ctx context.Context, orderItem OrderItem) (Ord
 	orderItem.StatusID = createdOrderItemStatusID.ID
 	created, err := s.GetRepo().Create(ctx, orderItem)
 	if err != nil {
-		slog.Error("Create orderItem failed", "error", err, "orderID", orderItem.OrderID)
 		return OrderItem{}, core.NewTechnicalError(err, orderItemServiceCode, "Ошибка при создании элемента заказа")
 	}
-	slog.Info("OrderItem created", "orderID", created.OrderID)
 	return created, nil
 }
 
 func (s *orderItemService) Update(ctx context.Context, orderItem OrderItem) (OrderItem, error) {
 	updated, err := s.GetRepo().Update(ctx, orderItem)
 	if err != nil {
-		slog.Error("Update orderItem failed", "error", err, "orderID", orderItem.OrderID)
 		return OrderItem{}, core.NewTechnicalError(err, orderItemServiceCode, "Ошибка при обновлении элемента заказа")
 	}
-	slog.Info("OrderItem updated", "orderID", updated.OrderID)
 	return updated, nil
 }
 
@@ -158,17 +153,14 @@ func (s *orderItemService) Cancel(ctx context.Context, orderItem OrderItem) (Ord
 func (s *orderItemService) Delete(ctx context.Context, orderItem OrderItem) error {
 	err := s.GetRepo().Delete(ctx, orderItem)
 	if err != nil {
-		slog.Error("Failed to delete orderItem", "error", err, "id", orderItem.ID)
 		return core.NewTechnicalError(err, orderItemServiceCode, "Ошибка при удалении элемента заказа")
 	}
-	slog.Info("Deleted orderItem", "orderID", orderItem.OrderID)
 	return nil
 }
 
 func (s *orderItemService) GetByOrderID(ctx context.Context, orderID uint) ([]OrderItem, error) {
 	orderItems, err := s.orderItemRepo.FindByOrderID(ctx, orderID)
 	if err != nil {
-		slog.Error("Failed to find orderItem by order", "error", err, "orderID", orderID)
 		if errors.Is(err, &core.NotFoundError{}) {
 			return nil, core.NewLogicalError(err, orderItemServiceCode, err.Error())
 		}

@@ -2,8 +2,9 @@ package product
 
 import (
 	"context"
+	"database/sql"
 	"errors"
-	"log/slog"
+	"time"
 
 	"github.com/ActuallyHello/backendstory/pkg/backendstory/enum"
 	"github.com/ActuallyHello/backendstory/pkg/backendstory/enumvalue"
@@ -19,7 +20,7 @@ type ProductService interface {
 
 	Create(ctx context.Context, product Product) (Product, error)
 	Update(ctx context.Context, product Product) (Product, error)
-	Delete(ctx context.Context, product Product) error
+	Delete(ctx context.Context, product Product, soft bool) error
 
 	GetByCode(ctx context.Context, code string) (Product, error)
 	GetByCategoryID(ctx context.Context, categoryID uint) ([]Product, error)
@@ -46,74 +47,57 @@ func NewProductService(
 	}
 }
 
-// Create создает новую Product с базовой валидацией
 func (s *productService) Create(ctx context.Context, product Product) (Product, error) {
-	criteriaByCodeAndSku := core.SearchCriteria{
-		Limit: 1,
-		SearchConditions: []core.SearchCondition{
-			{
-				Field:     "CODE",
-				Operation: core.OpEqual,
-				Value:     product.Code,
-			},
-			{
-				Field:     "SKU",
-				Operation: core.OpEqual,
-				Value:     product.Sku,
-			},
-		},
-	}
-	// Проверка существования с таким кодом
-	products, err := s.GetWithSearchCriteria(ctx, criteriaByCodeAndSku)
-	if err != nil && errors.Is(err, &core.TechnicalError{}) {
+	exists, err := s.isProductExists(ctx, product)
+	if err != nil {
 		return Product{}, err
 	}
-	if len(products) > 0 {
-		slog.Error("Product already exists!", "error", err, "code", product.Code, "sku", product.Sku)
+	if exists {
 		return Product{}, core.NewLogicalError(nil, productServiceCode, "Продукт уже существует")
 	}
 
-	// Создаем запись
-	created, err := s.GetRepo().Create(ctx, product)
-	if err != nil {
-		slog.Error("Create product failed", "error", err, "code", product.Code, "sku", product.Sku)
-		return Product{}, core.NewTechnicalError(err, productServiceCode, err.Error())
-	}
-	slog.Info("Product created", "code", created.Code, "sku", product.Sku)
-	return created, nil
-}
-
-// Update обновляет существующую Product
-func (s *productService) Update(ctx context.Context, product Product) (Product, error) {
-	existing, err := s.GetRepo().FindByID(ctx, product.ID)
+	status, err := s.enumValueService.GetByCodeAndEnumCode(ctx, AvailableProductStatus, ProductStatus)
 	if err != nil {
 		return Product{}, err
 	}
 
-	updated, err := s.GetRepo().Update(ctx, existing)
+	product.StatusID = status.ID
+	created, err := s.GetRepo().Create(ctx, product)
 	if err != nil {
-		slog.Error("Update product failed", "error", err, "code", product.Code)
+		return Product{}, core.NewTechnicalError(err, productServiceCode, err.Error())
+	}
+	return created, nil
+}
+
+func (s *productService) Update(ctx context.Context, product Product) (Product, error) {
+	updated, err := s.GetRepo().Update(ctx, product)
+	if err != nil {
 		return Product{}, core.NewTechnicalError(err, productServiceCode, "Ошибка при обновлении продукта")
 	}
 	return updated, nil
 }
 
-// Delete удаляет Product (мягко или полностью)
-func (s *productService) Delete(ctx context.Context, product Product) error {
-	err := s.GetRepo().Delete(ctx, product)
+func (s *productService) Delete(ctx context.Context, product Product, soft bool) error {
+	var err error
+	if soft {
+		product.DeletedAt = sql.NullTime{
+			Time:  time.Now(),
+			Valid: true,
+		}
+		_, err = s.GetRepo().Update(ctx, product)
+	} else {
+		err = s.GetRepo().Delete(ctx, product)
+	}
+
 	if err != nil {
-		slog.Error("Failed to delete product", "error", err, "id", product.ID)
 		return core.NewTechnicalError(err, productServiceCode, "Ошибка при удалении продукта")
 	}
-	slog.Info("Deleted product", "code", product.Code)
 	return nil
 }
 
-// FindByCode ищет Product по коду
 func (s *productService) GetByCode(ctx context.Context, code string) (Product, error) {
 	product, err := s.productRepo.FindByCode(ctx, code)
 	if err != nil {
-		slog.Error("Failed to find product by code", "error", err, "code", code)
 		if errors.Is(err, &core.NotFoundError{}) {
 			return Product{}, core.NewLogicalError(err, productServiceCode, err.Error())
 		}
@@ -122,12 +106,37 @@ func (s *productService) GetByCode(ctx context.Context, code string) (Product, e
 	return product, nil
 }
 
-// FindByProductID ищет Product по category id
 func (s *productService) GetByCategoryID(ctx context.Context, categoryID uint) ([]Product, error) {
 	products, err := s.productRepo.FindByCategoryID(ctx, categoryID)
 	if err != nil {
-		slog.Error("Failed to find product by code", "error", err, "categoryID", categoryID)
 		return nil, core.NewTechnicalError(err, productServiceCode, err.Error())
 	}
 	return products, nil
+}
+
+func (s *productService) isProductExists(ctx context.Context, product Product) (bool, error) {
+	conditions := []core.SearchCondition{}
+	conditions = append(conditions, core.SearchCondition{
+		Field:     "CODE",
+		Operation: core.OpEqual,
+		Value:     product.Code,
+	})
+	conditions = append(conditions, core.SearchCondition{
+		Field:     "SKU",
+		Operation: core.OpEqual,
+		Value:     product.Sku,
+	})
+	criteria := core.SearchCriteria{
+		Limit:            1,
+		SearchConditions: conditions,
+	}
+
+	products, err := s.GetWithSearchCriteria(ctx, criteria)
+	if err != nil && errors.Is(err, &core.TechnicalError{}) {
+		return false, err
+	}
+	if len(products) > 0 {
+		return true, nil
+	}
+	return false, nil
 }

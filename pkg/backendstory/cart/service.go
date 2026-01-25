@@ -3,7 +3,6 @@ package cart
 import (
 	"context"
 	"errors"
-	"log/slog"
 
 	"github.com/ActuallyHello/backendstory/pkg/core"
 )
@@ -40,10 +39,8 @@ func (s *cartService) Create(ctx context.Context, cart Cart) (Cart, error) {
 	// Создаем запись
 	created, err := s.GetRepo().Create(ctx, cart)
 	if err != nil {
-		slog.Error("Create cart failed", "error", err, "personID", cart.PersonID)
 		return Cart{}, core.NewTechnicalError(err, cartServiceCode, "Ошибка при создании корзины")
 	}
-	slog.Info("Cart created", "personID", created.PersonID)
 	return created, nil
 }
 
@@ -51,10 +48,8 @@ func (s *cartService) Create(ctx context.Context, cart Cart) (Cart, error) {
 func (s *cartService) Delete(ctx context.Context, cart Cart) error {
 	err := s.GetRepo().Delete(ctx, cart)
 	if err != nil {
-		slog.Error("Failed to delete cart", "error", err, "id", cart.ID)
 		return core.NewTechnicalError(err, cartServiceCode, "Ошибка при удалении пользователя")
 	}
-	slog.Info("Deleted cart", "personID", cart.PersonID)
 	return nil
 }
 
@@ -62,7 +57,6 @@ func (s *cartService) Delete(ctx context.Context, cart Cart) error {
 func (s *cartService) GetByPersonID(ctx context.Context, personID uint) (Cart, error) {
 	cart, err := s.cartRepo.FindByPersonID(ctx, personID)
 	if err != nil {
-		slog.Error("Failed to find cart by code", "error", err, "personID", personID)
 		if errors.Is(err, &core.NotFoundError{}) {
 			return Cart{}, core.NewLogicalError(err, cartServiceCode, err.Error())
 		}

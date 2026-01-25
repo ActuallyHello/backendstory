@@ -2,7 +2,6 @@ package productmedia
 
 import (
 	"context"
-	"log/slog"
 
 	"github.com/ActuallyHello/backendstory/pkg/core"
 )
@@ -37,13 +36,10 @@ func NewProductMediaService(
 
 // Create создает новую ProductMedia с базовой валидацией
 func (s *productMediaService) Create(ctx context.Context, productMedia ProductMedia) (ProductMedia, error) {
-	// Создаем запись
 	created, err := s.GetRepo().Create(ctx, productMedia)
 	if err != nil {
-		slog.Error("Create productMedia failed", "error", err, "productId", productMedia.ProductID)
 		return ProductMedia{}, core.NewTechnicalError(err, productMediaServiceCode, err.Error())
 	}
-	slog.Info("ProductMedia created", "productId", created.ProductID)
 	return created, nil
 }
 
@@ -56,7 +52,6 @@ func (s *productMediaService) Update(ctx context.Context, productMedia ProductMe
 
 	updated, err := s.GetRepo().Update(ctx, existing)
 	if err != nil {
-		slog.Error("Update productMedia failed", "error", err, "productId", productMedia.ProductID)
 		return ProductMedia{}, err
 	}
 	return updated, nil
@@ -66,10 +61,8 @@ func (s *productMediaService) Update(ctx context.Context, productMedia ProductMe
 func (s *productMediaService) Delete(ctx context.Context, productMedia ProductMedia) error {
 	err := s.GetRepo().Delete(ctx, productMedia)
 	if err != nil {
-		slog.Error("Failed to delete productMedia", "error", err, "id", productMedia.ID)
 		return core.NewTechnicalError(err, productMediaServiceCode, err.Error())
 	}
-	slog.Info("Deleted productMedia", "productId", productMedia.ProductID)
 	return nil
 }
 
@@ -77,7 +70,6 @@ func (s *productMediaService) Delete(ctx context.Context, productMedia ProductMe
 func (s *productMediaService) GetByProductID(ctx context.Context, productID uint) ([]ProductMedia, error) {
 	productMedia, err := s.productMediaRepo.FindByProductID(ctx, productID)
 	if err != nil {
-		slog.Error("Failed to find productMedia by code", "error", err, "productId", productID)
 		return nil, core.NewTechnicalError(err, productMediaServiceCode, err.Error())
 	}
 	return productMedia, nil

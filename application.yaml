@@ -14,7 +14,7 @@ app:
       max-idle-time: 2m
   server:
     addr: ${SERVER_PORT::8080}
-    static: static/media
+    static: static
     timeout:
       idle: ${SERVER_TIMEOUT_IDLE:30s}
       read: ${SERVER_TIMEOUT_READ:5s}

@@ -1,13 +1,15 @@
 package main
 
 import (
-	"fmt"
-	"log"
+	"context"
 	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"strings"
+	"syscall"
+	"time"
 
 	"github.com/ActuallyHello/backendstory/pkg/config"
 	"github.com/ActuallyHello/backendstory/pkg/container"
@@ -49,40 +51,72 @@ const (
 
 // @x-extension-openapi {"example": "value"}
 func main() {
-	slog.Info("Loading backendstory application...")
+	ctx, stop := signal.NotifyContext(
+		context.Background(),
+		os.Interrupt,
+		syscall.SIGTERM,
+	)
+	defer stop()
 
 	config := config.MustLoadConfig(".")
 
-	slog.Info("Config was loaded...")
+	appLogger := MustSetupLogger(config.Deployment, config.LogLevel)
+	slog.SetDefault(appLogger)
 
-	// appLogger := MustSetupLogger(config.Deployment, config.LogLevel)
-	// slog.SetDefault(appLogger)
+	container, err := container.NewAppContainer(ctx, config)
+	if err != nil {
+		slog.Error("failed to init container", "error", err)
+		os.Exit(1)
+	}
+	defer container.Close()
 
-	container := container.NewAppContainer(config)
-
-	slog.Info("Dependency container uploaded! Application ready to start!")
+	slog.Info("Application ready to start!")
 
 	// Получаем текущую рабочую директорию
 	workDir, err := os.Getwd()
 	if err != nil {
-		panic(fmt.Sprintf("Failed to get working directory: %v", err))
+		slog.Error("failed to get working directory", "error", err)
+		os.Exit(1)
 	}
 	// Создаем абсолютный путь к статическим файлам
 	staticFilesPath := filepath.Join(workDir, config.ServerConfig.StaticFilesPath)
 	// Создаем директорию если она не существует
-	fullPath := filepath.Join(staticFilesPath, "imgs", "products")
-	if err := os.MkdirAll(fullPath, 0755); err != nil {
-		panic(fmt.Sprintf("Failed to create static directory: %v", err))
+	staticFullPath := filepath.Join(staticFilesPath)
+	if err := os.MkdirAll(staticFullPath, 0755); err != nil {
+		slog.Error("failed to create static directory", "error", err)
+		os.Exit(1)
 	}
-	slog.Info("Static directories created", "path", fullPath)
 
-	r := server.SetupRouter(container, config.ServerConfig.StaticFilesPath)
-
-	slog.Info("Starting server on port " + config.ServerConfig.Addr)
-
-	if err := http.ListenAndServe(config.ServerConfig.Addr, r); err != nil {
-		log.Fatal(err)
+	router, err := server.SetupRouter(container, staticFullPath)
+	if err != nil {
+		slog.Error("failed to setup routes", "error", err)
+		os.Exit(1)
 	}
+
+	server := &http.Server{
+		Addr:    config.ServerConfig.Addr,
+		Handler: router,
+	}
+
+	go func() {
+		slog.Info("Starting server on port " + config.ServerConfig.Addr)
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			slog.Error("http server error", "error", err)
+			stop()
+		}
+	}()
+
+	<-ctx.Done()
+	slog.Info("Shutdown signal received")
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(shutdownCtx); err != nil {
+		slog.Error("server shutdown failed", "error", err)
+	}
+
+	slog.Info("Application stopped gracefully")
 }
 
 func MustSetupLogger(deployment, level string) *slog.Logger {

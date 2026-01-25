@@ -69,7 +69,7 @@ func (r *BaseRepositoryImpl[T]) FindByID(ctx context.Context, id uint) (T, error
 	var entity T
 	if err := r.GetDB(ctx).First(&entity, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return entity, NewNotFoundError(entity.LocalTableName() + " с переданным ИД не существует")
+			return entity, NewNotFoundError(entity.LocalTableName() + " с переданным ID не существует")
 		}
 		return entity, err
 	}

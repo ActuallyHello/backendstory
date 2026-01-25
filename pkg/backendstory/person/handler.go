@@ -216,7 +216,7 @@ func (h *PersonHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	if softParam != "" {
 		soft, err := strconv.ParseBool(softParam)
 		if err != nil {
-			core.HandleError(w, r, core.NewLogicalError(err, personHandlerCode, "Признак мягкого удаления должен быть булевым!"+err.Error()))
+			core.HandleError(w, r, core.NewLogicalError(err, personHandlerCode, "Невалидный признак удаления!"+err.Error()))
 			return
 		}
 		softDelete = soft

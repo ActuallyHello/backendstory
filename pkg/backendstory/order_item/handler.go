@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/ActuallyHello/backendstory/pkg/backendstory/enumvalue"
 	"github.com/ActuallyHello/backendstory/pkg/core"
 	"github.com/go-playground/validator/v10"
 )
@@ -16,14 +17,17 @@ const (
 type OrderItemHandler struct {
 	validate         *validator.Validate
 	orderItemService OrderItemService
+	enumValueService enumvalue.EnumValueService
 }
 
 func NewOrderItemHandler(
 	orderItemService OrderItemService,
+	enumValueService enumvalue.EnumValueService,
 ) *OrderItemHandler {
 	return &OrderItemHandler{
 		validate:         validator.New(),
 		orderItemService: orderItemService,
+		enumValueService: enumValueService,
 	}
 }
 
@@ -68,8 +72,14 @@ func (h *OrderItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	orderItemStatus, err := h.enumValueService.GetByID(ctx, orderItem.StatusID)
+	if err != nil {
+		core.HandleError(w, r, err)
+		return
+	}
+
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(ToOrderItemDTO(orderItem))
+	json.NewEncoder(w).Encode(ToOrderItemDTO(orderItem, enumvalue.ToEnumValueDTO(orderItemStatus)))
 }
 
 // ChangeStatus изменяет статус элемента заказа
@@ -88,7 +98,7 @@ func (h *OrderItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} core.ErrorResponse "Элемент заказа не найден"
 // @Failure 409 {object} core.ErrorResponse "Конфликт статусов"
 // @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
-// @Router /order-items/{id}/status/{status} [patch]
+// @Router /order-items/{id}/change-status/{status} [post]
 // @Id changeOrderItemStatus
 func (h *OrderItemHandler) ChangeStatus(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -104,10 +114,6 @@ func (h *OrderItemHandler) ChangeStatus(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	status := r.PathValue("status")
-	if reqID == "" {
-		core.HandleError(w, r, core.NewLogicalError(nil, orderItemHandlerCode, "Отсутствует действие к элементу заказа"))
-		return
-	}
 	if status == "" {
 		core.HandleError(w, r, core.NewLogicalError(err, orderItemHandlerCode, "Параметр действия над элементом заказа пустой!"))
 		return
@@ -125,8 +131,14 @@ func (h *OrderItemHandler) ChangeStatus(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	orderItemStatus, err := h.enumValueService.GetByID(ctx, orderItem.StatusID)
+	if err != nil {
+		core.HandleError(w, r, err)
+		return
+	}
+
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(ToOrderItemDTO(orderItem))
+	json.NewEncoder(w).Encode(ToOrderItemDTO(orderItem, enumvalue.ToEnumValueDTO(orderItemStatus)))
 }
 
 // Delete удаляет элемент заказа
@@ -211,8 +223,14 @@ func (h *OrderItemHandler) GetById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	orderItemStatus, err := h.enumValueService.GetByID(ctx, orderItem.StatusID)
+	if err != nil {
+		core.HandleError(w, r, err)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(ToOrderItemDTO(orderItem))
+	json.NewEncoder(w).Encode(ToOrderItemDTO(orderItem, enumvalue.ToEnumValueDTO(orderItemStatus)))
 }
 
 // GetWithSearchCriteria возвращает список элементов заказа по критериям поиска
@@ -253,7 +271,12 @@ func (h *OrderItemHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.
 
 	dtos := make([]OrderItemDTO, 0, len(orderItems))
 	for _, orderItem := range orderItems {
-		dtos = append(dtos, ToOrderItemDTO(orderItem))
+		orderItemStatus, err := h.enumValueService.GetByID(ctx, orderItem.StatusID)
+		if err != nil {
+			core.HandleError(w, r, err)
+			return
+		}
+		dtos = append(dtos, ToOrderItemDTO(orderItem, enumvalue.ToEnumValueDTO(orderItemStatus)))
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -297,7 +320,12 @@ func (h *OrderItemHandler) GetByOrderID(w http.ResponseWriter, r *http.Request) 
 
 	orderItemDTOs := make([]OrderItemDTO, 0, len(orderItems))
 	for _, orderItem := range orderItems {
-		orderItemDTOs = append(orderItemDTOs, ToOrderItemDTO(orderItem))
+		orderItemStatus, err := h.enumValueService.GetByID(ctx, orderItem.StatusID)
+		if err != nil {
+			core.HandleError(w, r, err)
+			return
+		}
+		orderItemDTOs = append(orderItemDTOs, ToOrderItemDTO(orderItem, enumvalue.ToEnumValueDTO(orderItemStatus)))
 	}
 
 	w.WriteHeader(http.StatusOK)

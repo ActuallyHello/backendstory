@@ -54,12 +54,10 @@ func NewKeycloakService(ctx context.Context, cfg *config.KeycloakConfig) (*keycl
 		core.SetMaxDelayOpt(5*time.Second),
 	)
 	if err != nil {
-		slog.Error("Coundn't establish connection with keycloak", "error", err)
 		return nil, core.NewTechnicalError(err, keycloakAuthService, "Невозможно установить соединение с keycloak")
 	}
 	token, ok := tokenObj.(*gocloak.JWT)
 	if !ok {
-		slog.Error("Couldn't parse token to JWT format", "error", err)
 		return nil, core.NewTechnicalError(nil, keycloakAuthService, "Невозможно получить информацию из токена авторизации")
 	}
 
@@ -68,7 +66,6 @@ func NewKeycloakService(ctx context.Context, cfg *config.KeycloakConfig) (*keycl
 		ClientID: &cfg.ClientID, // Фильтруем по ClientID
 	})
 	if err != nil {
-		slog.Error("Failed to get clients", "error", err)
 		return nil, core.NewTechnicalError(err, keycloakAuthService, "Невозможно получить клиентов keycloak")
 	}
 	var clientUUID string
@@ -89,7 +86,6 @@ func NewKeycloakService(ctx context.Context, cfg *config.KeycloakConfig) (*keycl
 func (kc *keycloakService) RegisterUser(ctx context.Context, username, email, password string) error {
 	kcRole, err := kc.client.GetClientRole(ctx, kc.token.AccessToken, kc.cfg.Realm, kc.clientID, guestRole)
 	if err != nil {
-		slog.Error("Cannot find role!", "role", guestRole)
 		return core.NewTechnicalError(err, keycloakAuthService, "Роль 'Гость' отсутствует")
 	}
 
@@ -103,30 +99,25 @@ func (kc *keycloakService) RegisterUser(ctx context.Context, username, email, pa
 
 	userID, err := kc.client.CreateUser(ctx, kc.token.AccessToken, kc.cfg.Realm, user)
 	if err != nil {
-		slog.Error("Error while creating user", "user", user, "error", err)
 		return core.NewTechnicalError(err, keycloakAuthService, "Ошибка при создании пользователя в keycloak")
 	}
 
 	err = kc.client.SetPassword(ctx, kc.token.AccessToken, userID, kc.cfg.Realm, password, false)
 	if err != nil {
-		slog.Error("Error setting password to user", "user", user, "error", err)
 		return core.NewTechnicalError(err, keycloakAuthService, "Ошибка при установке пароля для пользователя в keycloak")
 	}
 
 	err = kc.client.AddClientRolesToUser(ctx, kc.token.AccessToken, kc.cfg.Realm, kc.clientID, userID, []gocloak.Role{*kcRole})
 	if err != nil {
-		slog.Error("Cannot set role!", "role", kcRole.Name, "userID", userID)
 		return core.NewTechnicalError(err, keycloakAuthService, "Невозможно установить роль 'Гость' для пользователя")
 	}
 
-	slog.Info("Register user", "user", user)
 	return nil
 }
 
 func (kc *keycloakService) Login(ctx context.Context, username, password string) (JWT, error) {
 	token, err := kc.client.Login(ctx, kc.cfg.ClientID, kc.cfg.ClientSecret, kc.cfg.Realm, username, password)
 	if err != nil {
-		slog.Error("Cannot login user", "username", username, "error", err)
 		return JWT{}, core.NewAccessError(err, keycloakAuthService, "Ошибка при авторизации в keycloak")
 	}
 	return JWT{
@@ -140,7 +131,6 @@ func (kc *keycloakService) Login(ctx context.Context, username, password string)
 func (kc *keycloakService) RefreshToken(ctx context.Context, refreshToken string) (JWT, error) {
 	token, err := kc.client.RefreshToken(ctx, refreshToken, kc.cfg.ClientID, kc.cfg.ClientSecret, kc.cfg.Realm)
 	if err != nil {
-		slog.Error("Cannot refresh token", "error", err)
 		return JWT{}, core.NewAccessError(err, keycloakAuthService, err.Error())
 	}
 	return JWT{
@@ -155,7 +145,6 @@ func (kc *keycloakService) GetRoles(ctx context.Context) ([]string, error) {
 	params := gocloak.GetRoleParams{}
 	kcRoles, err := kc.client.GetClientRoles(ctx, kc.token.AccessToken, kc.cfg.Realm, kc.clientID, params)
 	if err != nil {
-		slog.Error("Cannot get roles", "error", err)
 		return nil, core.NewTechnicalError(err, keycloakAuthService, "Невозможно получить роли keycloak")
 	}
 	roles := make([]string, 0, len(kcRoles))
@@ -173,7 +162,6 @@ func (kc *keycloakService) GetRolesByUser(ctx context.Context, username string) 
 
 	kcRoles, err := kc.client.GetClientRolesByUserID(ctx, kc.token.AccessToken, kc.cfg.Realm, kc.clientID, userDTO.ID)
 	if err != nil {
-		slog.Error("Couldn't find user roles", "username", username, "error", err)
 		return nil, core.NewTechnicalError(err, keycloakAuthService, "Невозможно получить роли keycloak")
 	}
 
@@ -188,7 +176,6 @@ func (kc *keycloakService) GetRolesByUser(ctx context.Context, username string) 
 func (kc *keycloakService) GetTokenUserInfo(ctx context.Context, token string) (TokenUserInfo, error) {
 	_, claims, err := kc.client.DecodeAccessToken(ctx, token, kc.cfg.Realm)
 	if err != nil {
-		slog.Error("Couldn't decode access token", "error", err)
 		return TokenUserInfo{}, core.NewTechnicalError(err, keycloakAuthService, "Ошибка при расшифровке токена авторизации")
 	}
 
@@ -196,57 +183,47 @@ func (kc *keycloakService) GetTokenUserInfo(ctx context.Context, token string) (
 
 	emailRaw, ok := (*claims)["email"]
 	if !ok {
-		slog.Error("Couldn't decode email tag", "error", err)
 		return TokenUserInfo{}, core.NewLogicalError(nil, keycloakAuthService, "Неверный формат токена. Не найден тэг : email")
 	}
 	email, ok := emailRaw.(string)
 	if !ok {
-		slog.Error("Couldn't decode email struct", "error", err)
 		return TokenUserInfo{}, core.NewLogicalError(nil, keycloakAuthService, "Неверный формат токена. Тэг email некорректный!")
 	}
 	tokenUserInfo.Email = email
 
 	usernameRaw, ok := (*claims)["preferred_username"]
 	if !ok {
-		slog.Error("Couldn't decode username tag", "error", err)
 		return TokenUserInfo{}, core.NewLogicalError(nil, keycloakAuthService, "Неверный формат токена. Не найден тэг : preferred_username")
 	}
 	username, ok := usernameRaw.(string)
 	if !ok {
-		slog.Error("Couldn't decode username struct", "error", err)
 		return TokenUserInfo{}, core.NewLogicalError(nil, keycloakAuthService, "Неверный формат токена. Тэг preferred_username некорректный!")
 	}
 	tokenUserInfo.Username = username
 
 	resource_access, ok := (*claims)["resource_access"]
 	if !ok {
-		slog.Error("Couldn't decode recource access tag", "error", err)
 		return TokenUserInfo{}, core.NewLogicalError(nil, keycloakAuthService, "Неверный формат токена. Не найден тэг : resource_access")
 	}
 	tokenClients, ok := resource_access.(map[string]any)
 	if !ok {
-		slog.Error("Couldn't decode recource access struct", "error", err)
 		return TokenUserInfo{}, core.NewLogicalError(nil, keycloakAuthService, "Неверный формат токена. Тэг resource_access некорректный!")
 	}
 	clientResourcesRaw, ok := tokenClients[kc.cfg.ClientID]
 	if !ok {
-		slog.Error("Couldn't get token clients by client id tag", "error", err)
 		return TokenUserInfo{}, core.NewLogicalError(nil, keycloakAuthService, "Неверный формат токена. Не найдены клиенты по переданному идентификатору!")
 	}
 	clientResources, ok := clientResourcesRaw.(map[string]any)
 	if !ok {
-		slog.Error("Couldn't get token clients by client id struct", "error", err)
 		return TokenUserInfo{}, core.NewLogicalError(nil, keycloakAuthService, "Неверный формат токена. Некорректный формат информации о клиентах!")
 	}
 
 	rolesRaw, ok := clientResources["roles"]
 	if !ok {
-		slog.Error("Couldn't get roles tag", "error", err)
 		return TokenUserInfo{}, core.NewLogicalError(nil, keycloakAuthService, "Неверный формат токена. Нет данных по ролям клиента!")
 	}
 	rolesSlice, ok := rolesRaw.([]interface{})
 	if !ok {
-		slog.Error("Couldn't get roles struct", "error", err)
 		return TokenUserInfo{}, core.NewLogicalError(nil, keycloakAuthService, "Неверный формат токена. Некорректный формат ролей!")
 	}
 	roles := make([]string, len(rolesSlice))
@@ -262,7 +239,6 @@ func (kc *keycloakService) GetUsers(ctx context.Context) ([]UserDTO, error) {
 	params := gocloak.GetUsersParams{}
 	kcUsers, err := kc.client.GetUsers(ctx, kc.token.AccessToken, kc.cfg.Realm, params)
 	if err != nil {
-		slog.Error("Couldn't get users", "error", err)
 		return nil, core.NewTechnicalError(err, keycloakAuthService, "Ошибка при поиске пользователей по заданным параметрам")
 	}
 
@@ -286,11 +262,9 @@ func (kc *keycloakService) GetUserByEmail(ctx context.Context, email string) (Us
 	// always return 1 element
 	kcUsers, err := kc.client.GetUsers(ctx, kc.token.AccessToken, kc.cfg.Realm, params)
 	if err != nil {
-		slog.Error("Couldn't find user by", "email", email, "error", err)
 		return UserDTO{}, core.NewTechnicalError(err, keycloakAuthService, "Ошибка при получении пользователя!")
 	}
 	if len(kcUsers) == 0 {
-		slog.Error("User doesn't exist!", "email", email)
 		return UserDTO{}, core.NewLogicalError(err, keycloakAuthService, "Пользователя с такими данными не существует!")
 	}
 
@@ -312,10 +286,8 @@ func (kc *keycloakService) DeleteUser(ctx context.Context, email string) error {
 
 	err = kc.client.DeleteUser(ctx, kc.token.AccessToken, kc.cfg.Realm, userDTO.ID)
 	if err != nil {
-		slog.Error("Error while deleteting user", "email", email, "error", err)
 		return core.NewTechnicalError(err, keycloakAuthService, "Ошибка при удалении пользователя!")
 	}
-	slog.Info("User deleted", "email", email)
 	return nil
 }
 

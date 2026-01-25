@@ -27,7 +27,8 @@ import (
 
 type AppContainer struct {
 	// application
-	ctx context.Context
+	ctx    context.Context
+	cancel context.CancelFunc
 
 	// database
 	db        *gorm.DB
@@ -77,9 +78,9 @@ type AppContainer struct {
 	authService auth.AuthService
 }
 
-func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
+func NewAppContainer(ctx context.Context, appConfig *config.ApplicationConfig) (*AppContainer, error) {
 	// application
-	ctx := context.Background()
+	appCtx, cancel := context.WithCancel(ctx)
 
 	// database
 	dsn := constructDSN(appConfig.DatabaseConfig)
@@ -115,11 +116,14 @@ func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
 	orderService := order.NewOrderService(orderRepo, txManager, enumService, enumValueService, orderItemService)
 
 	// auth
-	keycloakService, err := auth.NewKeycloakService(ctx, appConfig.KeycloakConfig)
+	keycloakService, err := auth.NewKeycloakService(appCtx, appConfig.KeycloakConfig)
 	if err != nil {
 		slog.Error("Error while creating keycloak connection", "err", err)
 		log.Fatal(err)
 	}
+
+	// resources
+	fileService := resources.NewFileService()
 
 	// handlers
 	enumHandler := enum.NewEnumHandler(enumService)
@@ -130,15 +134,14 @@ func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
 	productHandler := product.NewProductHandler(productService, enumValueService, categoryService)
 	cartHandler := cart.NewCartHandler(cartServices)
 	cartItemHandler := cartitem.NewCartItemHandler(cartItemService)
-	orderItemHandler := orderitem.NewOrderItemHandler(orderItemService)
-	orderHandler := order.NewOrderHandler(orderService, personService)
-
-	// refactor
-	productMediaHandler := productmedia.NewProductMediaHandler(productMediaService, productService, resources.FileService{}, "static/media")
+	orderItemHandler := orderitem.NewOrderItemHandler(orderItemService, enumValueService)
+	orderHandler := order.NewOrderHandler(orderService, personService, enumValueService)
+	productMediaHandler := productmedia.NewProductMediaHandler(productMediaService, productService, fileService, appConfig.ServerConfig.StaticFilesPath)
 
 	return &AppContainer{
 		// application
-		ctx: ctx,
+		ctx:    appCtx,
+		cancel: cancel,
 
 		// database
 		db:        db,
@@ -168,7 +171,8 @@ func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
 		orderItemService:    orderItemService,
 		orderService:        orderService,
 
-		fileService: resources.FileService{},
+		// resources
+		fileService: fileService,
 
 		// handlers
 		authHandler:         authHandler,
@@ -185,7 +189,7 @@ func NewAppContainer(appConfig *config.ApplicationConfig) *AppContainer {
 
 		// auth
 		authService: keycloakService,
-	}
+	}, nil
 }
 
 func constructDSN(databaseConfig *config.DatabaseConfig) string {
@@ -196,6 +200,37 @@ func constructDSN(databaseConfig *config.DatabaseConfig) string {
 		databaseConfig.Port,
 		databaseConfig.Database,
 	)
+}
+
+// Close освобождает ресурсы
+func (c *AppContainer) Close() {
+	slog.Info("Closing application resources")
+
+	c.cancel()
+
+	if c.db != nil {
+		sqlDB, err := c.db.DB()
+		if err != nil {
+			slog.Error("failed attempt to close database connection", "error", err)
+		}
+		if err := sqlDB.Close(); err != nil {
+			slog.Error("failed to close database", "error", err)
+		}
+	}
+
+	slog.Info("All resources closed")
+}
+
+// HealthCheck проверяет доступность базы данных
+func (c *AppContainer) HealthCheck() error {
+	if c.db != nil {
+		sqlDB, err := c.db.DB()
+		if err != nil {
+			return err
+		}
+		return sqlDB.Ping()
+	}
+	return core.NewTechnicalError(nil, "CONTAINER", "database connection is not initialized")
 }
 
 // Application
@@ -342,28 +377,4 @@ func (c *AppContainer) GetOrderItemHandler() *orderitem.OrderItemHandler {
 // Auth
 func (c *AppContainer) GetAuthService() auth.AuthService {
 	return c.authService
-}
-
-// Close освобождает ресурсы
-func (c *AppContainer) Close() error {
-	if c.db != nil {
-		sqlDB, err := c.db.DB()
-		if err != nil {
-			return err
-		}
-		return sqlDB.Close()
-	}
-	return nil
-}
-
-// HealthCheck проверяет доступность базы данных
-func (c *AppContainer) HealthCheck() error {
-	if c.db != nil {
-		sqlDB, err := c.db.DB()
-		if err != nil {
-			return err
-		}
-		return sqlDB.Ping()
-	}
-	return fmt.Errorf("database connection is not initialized")
 }

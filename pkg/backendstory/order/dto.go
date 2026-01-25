@@ -2,6 +2,8 @@ package order
 
 import (
 	"time"
+
+	"github.com/ActuallyHello/backendstory/pkg/backendstory/enumvalue"
 )
 
 // OrderCreateRequest запрос на создание заказа
@@ -14,24 +16,23 @@ type OrderCreateRequest struct {
 // OrderUpdateRequest запрос на создание заказа
 // @Name OrderUpdateRequest
 type OrderUpdateRequest struct {
-	ID        uint   `json:"id" validate:"required,min=1"`
-	Details   string `json:"details" validate:"required"`
-	ManagerID uint   `json:"manager_id" validate:"required,min=1"`
+	ID      uint   `json:"id" validate:"required,min=1"`
+	Details string `json:"details" validate:"required"`
 }
 
 // OrderDTO представление заказа
 // @Name OrderDTO
 type OrderDTO struct {
-	ID        uint      `json:"id"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	Details   string    `json:"details"`
-	StatusID  uint      `json:"status_id"`
-	ClientID  uint      `json:"client_id"`
-	ManagerID *uint     `json:"manager_id"`
+	ID        uint                   `json:"id"`
+	CreatedAt time.Time              `json:"created_at"`
+	UpdatedAt time.Time              `json:"updated_at"`
+	Details   string                 `json:"details"`
+	StatusDTO enumvalue.EnumValueDTO `json:"status_dto"`
+	ClientID  uint                   `json:"client_id"`
+	ManagerID *uint                  `json:"manager_id"`
 }
 
-func ToOrderDTO(order Order) OrderDTO {
+func ToOrderDTO(order Order, status enumvalue.EnumValueDTO) OrderDTO {
 	var managerID *uint
 	if order.ManagerID.Valid {
 		tempManagerID := uint(order.ManagerID.Int32)
@@ -43,7 +44,7 @@ func ToOrderDTO(order Order) OrderDTO {
 		CreatedAt: order.CreatedAt,
 		UpdatedAt: order.UpdatedAt,
 		Details:   order.Details,
-		StatusID:  order.StatusID,
+		StatusDTO: status,
 		ClientID:  order.ClientID,
 		ManagerID: managerID,
 	}

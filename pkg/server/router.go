@@ -2,8 +2,6 @@ package server
 
 import (
 	"net/http"
-	"os"
-	"path/filepath"
 
 	"github.com/ActuallyHello/backendstory/pkg/backendstory/auth"
 	"github.com/ActuallyHello/backendstory/pkg/backendstory/cart"
@@ -30,14 +28,16 @@ const (
 	byId     = "/{id}"
 )
 
-func SetupRouter(container *container.AppContainer, staticFilesPath string) http.Handler {
+func SetupRouter(container *container.AppContainer, staticDir string) (http.Handler, error) {
 	r := chi.NewRouter()
 
-	r.Use(middleware.Logger)
-	// custom ErrorHandler
+	r.Use(middleware.RequestID)
+	r.Use(middleware.RealIP)
+	r.Use(core.LoggerContextMiddleware)
+	r.Use(core.AccessLogMiddleware)
 	r.Use(core.ErrorHandler)
-	// static files
-	setupStaticRoutes(r, staticFilesPath)
+
+	setupStaticRoutes(r, staticDir)
 
 	r.Route(apiV1, func(r chi.Router) {
 
@@ -48,13 +48,14 @@ func SetupRouter(container *container.AppContainer, staticFilesPath string) http
 		// TODO: TEST SCENARIOUS
 		// TODO: purchase routes
 		// TODO: Order routes, scenarious
-		// TODO: enum service by code and by enum value code
 		// TODO: order decomposite methods
 		// TODO: order item routes
 
 		// TODO: ENUM CONSTAT BY EACH ENTITY.go
-		// TODO: DELETE CART ITEM STATUS
 		// TODO: common method with approve/cancel order actions
+
+		// TODO: find enumvalues batch for mapping entities
+		// TODO: convert entity - not dto
 
 		registerAuthRoutes(r, container.GetAuthService(), container.GetAuthHandler())
 
@@ -84,7 +85,7 @@ func SetupRouter(container *container.AppContainer, staticFilesPath string) http
 		w.Write([]byte("ok"))
 	})
 
-	return r
+	return r, nil
 }
 
 func registerEnumRoutes(r chi.Router, authService auth.AuthService, enumHandler *enum.EnumHandler) {
@@ -191,6 +192,8 @@ func registerProductRoutes(r chi.Router, authService auth.AuthService, productHa
 			r.Use(AuthMiddleware(authService, "admin", "guest"))
 
 			r.Post("/", productHandler.Create)
+			r.Post("/change-status", productHandler.ChangeStatus)
+			r.Post("/change-price", productHandler.ChangePrice)
 			r.Delete("/{id}", productHandler.Delete)
 		})
 
@@ -198,13 +201,14 @@ func registerProductRoutes(r chi.Router, authService auth.AuthService, productHa
 }
 
 // setupStaticRoutes настраивает раздачу статических файлов
-func setupStaticRoutes(r chi.Router, staticFilesPath string) {
-	// Создаем файловый сервер для статических файлов
-	workDir, _ := os.Getwd()
-	filesDir := http.Dir(filepath.Join(workDir, staticFilesPath))
+func setupStaticRoutes(r chi.Router, staticDir string) {
+	r.Handle(
+		"/static/*",
+		http.StripPrefix("/static/",
+			http.FileServer(http.Dir(staticDir)),
+		),
+	)
 
-	// Настраиваем маршрут для статических файлов
-	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(filesDir)))
 }
 
 // registerProductMediaRoutes регистрирует маршруты для работы с медиа товаров
@@ -264,6 +268,7 @@ func registerOrderRoutes(r chi.Router, authService auth.AuthService, orderHandle
 			r.Use(AuthMiddleware(authService, "admin"))
 
 			r.Post("/{id}/change-status/{status}", orderHandler.ChangeStatus)
+			r.Post("/add-details", orderHandler.AddDetails)
 		})
 	})
 }

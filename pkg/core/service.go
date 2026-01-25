@@ -3,7 +3,6 @@ package core
 import (
 	"context"
 	"errors"
-	"log/slog"
 )
 
 const (
@@ -42,9 +41,8 @@ func (s *BaseServiceImpl[T]) GetByID(ctx context.Context, id uint) (T, error) {
 	var empty T
 	entity, err := s.repo.FindByID(ctx, id)
 	if err != nil {
-		slog.Error("GetByID failed", "error", err, "id", id, "entity", entity.TableName())
 		if errors.Is(err, &NotFoundError{}) {
-			return empty, NewLogicalError(err, entity.TableName()+serviceCodeSuffix, "Ошибка при получении сущности по ID "+empty.LocalTableName())
+			return empty, NewLogicalError(err, entity.TableName()+serviceCodeSuffix, err.Error())
 		}
 		return empty, NewTechnicalError(err, entity.TableName()+serviceCodeSuffix, err.Error())
 	}
@@ -56,7 +54,6 @@ func (s *BaseServiceImpl[T]) GetAll(ctx context.Context) ([]T, error) {
 	var entity T
 	entities, err := s.repo.FindAll(ctx)
 	if err != nil {
-		slog.Error("GetAll failed", "error", err)
 		return nil, NewTechnicalError(err, entity.TableName()+serviceCodeSuffix, "Ошибка при получении списка сущностей "+entity.TableName())
 	}
 	return entities, nil
@@ -67,7 +64,6 @@ func (s *BaseServiceImpl[T]) GetWithSearchCriteria(ctx context.Context, criteria
 	var entity T
 	entities, err := s.repo.FindWithSearchCriteria(ctx, criteria)
 	if err != nil {
-		slog.Error("GetWithSearchCriteria failed", "error", err)
 		return nil, NewTechnicalError(err, entity.TableName()+serviceCodeSuffix, "Ошибка при получении по заданным параметрам сущностей "+entity.LocalTableName())
 	}
 	return entities, nil

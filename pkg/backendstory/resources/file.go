@@ -3,7 +3,6 @@ package resources
 import (
 	"fmt"
 	"io"
-	"log/slog"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -20,11 +19,20 @@ const (
 	fileServiceCode = "FILE_SERVICE"
 )
 
-type FileService struct {
+type FileService interface {
+	CreateImage(file multipart.File, header *multipart.FileHeader, staticFilePath string) (string, error)
+	DeleteImage(mediaPath, staticFilePath string) error
+}
+
+func NewFileService() FileService {
+	return &fileService{}
+}
+
+type fileService struct {
 }
 
 // returns relative path for saved file
-func (fs *FileService) CreateFromWeb(file multipart.File, header *multipart.FileHeader, staticFilesPath string) (string, error) {
+func (fs *fileService) CreateImage(file multipart.File, header *multipart.FileHeader, staticFilesPath string) (string, error) {
 	defer file.Close()
 
 	// Проверяем размер файла
@@ -50,10 +58,9 @@ func (fs *FileService) CreateFromWeb(file multipart.File, header *multipart.File
 		return "", core.NewTechnicalError(err, fileServiceCode, "Failed to reset file pointer")
 	}
 
-	// Генерируем уникальное имя файла
+	// Определяем расширение по типу контента
 	ext := filepath.Ext(header.Filename)
 	if ext == "" {
-		// Определяем расширение по типу контента
 		switch fileType {
 		case "image/jpeg":
 			ext = ".jpg"
@@ -69,22 +76,19 @@ func (fs *FileService) CreateFromWeb(file multipart.File, header *multipart.File
 	}
 
 	timestamp := time.Now().UnixNano()
-	filename := fmt.Sprintf("product_%d%s", timestamp, ext)
+	filename := fmt.Sprintf("image_%d%s", timestamp, ext)
 
 	// Полный путь к файлу на диске
-	fullFilePath := filepath.Join(staticFilesPath, "imgs", "products", filename)
+	fullFilePath := filepath.Join(staticFilesPath, "imgs", filename)
 
 	// Относительный путь для БД (тот, по которому файл будет доступен через HTTP)
-	relativePath := filepath.Join("/static/imgs/products", filename)
+	relativePath := filepath.Join("/static/imgs", filename)
 
 	// Создаем директорию если она не существует
 	dir := filepath.Dir(fullFilePath)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return "", core.NewTechnicalError(err, fileServiceCode, "Failed to create directory")
 	}
-
-	fmt.Printf("Saving file to: %s\n", fullFilePath)
-	fmt.Printf("Relative path for DB: %s\n", relativePath)
 
 	// Создаем файл на диске
 	dst, err := os.Create(fullFilePath)
@@ -104,17 +108,15 @@ func (fs *FileService) CreateFromWeb(file multipart.File, header *multipart.File
 	return relativePath, nil
 }
 
-func (fs *FileService) Delete(mediaLink, staticFilesPath string) {
+func (fs *fileService) DeleteImage(mediaPath, staticFilesPath string) error {
 	// Убираем /static из пути, так как у нас уже есть базовый путь
-	relativePath := strings.TrimPrefix(mediaLink, "/static")
+	relativePath := strings.TrimPrefix(mediaPath, "/static")
 	filePath := filepath.Join(staticFilesPath, relativePath)
-
-	fmt.Printf("Deleting file: %s\n", filePath)
 
 	if _, err := os.Stat(filePath); err == nil {
 		if err := os.Remove(filePath); err != nil {
-			// Логируем ошибку, но не прерываем выполнение
-			slog.Error("Failed to delete file!", "error", err)
+			return core.NewTechnicalError(err, fileServiceCode, "Ошибка при удалении")
 		}
 	}
+	return nil
 }

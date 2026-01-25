@@ -1,11 +1,13 @@
 package core
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
-	"runtime/debug"
+	"runtime"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -53,6 +55,8 @@ func (rw *responseWriter) WriteHeader(code int) {
 }
 
 func HandleError(w http.ResponseWriter, r *http.Request, err error) {
+	logError(r.Context(), err)
+
 	var logicErr *LogicalError
 	var techErr *TechnicalError
 	var accessErr *AccessError
@@ -93,13 +97,6 @@ func HandleError(w http.ResponseWriter, r *http.Request, err error) {
 		)
 	}
 
-	slog.Error(
-		"Handle error",
-		"Code", response.Code,
-		"Message", response.Message,
-	)
-	debug.PrintStack()
-
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(response.Status)
 
@@ -118,4 +115,30 @@ func HandleValidationError(w http.ResponseWriter, r *http.Request, err error, de
 	w.WriteHeader(http.StatusBadRequest)
 
 	json.NewEncoder(w).Encode(response)
+}
+
+func logError(ctx context.Context, err error) {
+	log := LoggerFromContext(ctx)
+
+	attrs := []slog.Attr{
+		slog.String("error", err.Error()),
+	}
+
+	var st StackTracer
+	if errors.As(err, &st) {
+		frames := runtime.CallersFrames(st.StackTrace())
+		var stack []string
+		for {
+			f, more := frames.Next()
+			stack = append(stack, fmt.Sprintf("%s:%d %s", f.File, f.Line, f.Function))
+
+			if !more {
+				break
+			}
+		}
+
+		attrs = append(attrs, slog.Any("stack", stack))
+	}
+
+	log.LogAttrs(ctx, slog.LevelError, "request failed", attrs...)
 }

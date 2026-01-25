@@ -2,8 +2,69 @@ package core
 
 import (
 	"fmt"
+	"runtime"
 	"time"
 )
+
+type StackTracer interface {
+	error
+	StackTrace() []uintptr
+}
+
+type StackError struct {
+	msg   string
+	cause error
+	stack []uintptr
+}
+
+func NewStackError(msg string) *StackError {
+	pcs := make([]uintptr, 32)
+	n := runtime.Callers(2, pcs)
+
+	return &StackError{
+		msg:   msg,
+		stack: pcs[:n],
+	}
+}
+
+func (e *StackError) Error() string {
+	if e.cause != nil {
+		// TODO: refactor errors
+		// logical/techinal errors duplicate log info
+		return e.cause.Error()
+	}
+	return e.msg
+}
+
+func (e *StackError) Unwrap() error {
+	return e.cause
+}
+
+func (e *StackError) StackTrace() []uintptr {
+	return e.stack
+}
+
+func WrapStack(err error, msg string) error {
+	if err == nil {
+		return nil
+	}
+
+	if se, ok := err.(*StackError); ok {
+		return &StackError{
+			msg:   msg,
+			cause: se,
+			stack: se.stack,
+		}
+	}
+
+	pcs := make([]uintptr, 32)
+	n := runtime.Callers(2, pcs)
+	return &StackError{
+		msg:   msg,
+		cause: err,
+		stack: pcs[:n],
+	}
+}
 
 type NotFoundError struct {
 	Message string
@@ -28,6 +89,10 @@ type ErrorInfo struct {
 	Err     error
 }
 
+func (e *ErrorInfo) Unwrap() error {
+	return e.Err
+}
+
 type LogicalError struct {
 	ErrorInfo
 }
@@ -41,7 +106,7 @@ func NewLogicalError(err error, code, message string) *LogicalError {
 		ErrorInfo: ErrorInfo{
 			Code:    code,
 			Message: message,
-			Err:     err,
+			Err:     WrapStack(err, message),
 		},
 	}
 }
@@ -59,7 +124,7 @@ func NewTechnicalError(err error, code, message string) *TechnicalError {
 		ErrorInfo: ErrorInfo{
 			Code:    code,
 			Message: message,
-			Err:     err,
+			Err:     WrapStack(err, message),
 		},
 	}
 }
@@ -101,11 +166,7 @@ func NewAccessError(err error, code, message string) *AccessError {
 }
 
 func errorString(err error, code, message string) string {
-	msg := fmt.Sprintf("[%s] %s", code, message)
-	// TODO: refactor len(message)!=len(err) - chose error message by application start mod (local, dev, prod)
-	if err != nil && len(message) != len(err.Error()) {
-		return fmt.Sprintf("%s. ERROR: %v", msg, err)
-	}
+	msg := fmt.Sprintf("[%s] %s", code, err.Error())
 	return msg
 }
 

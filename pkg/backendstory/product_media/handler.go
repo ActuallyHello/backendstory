@@ -38,9 +38,8 @@ func NewProductMediaHandler(
 		validate:            validator.New(),
 		productMediaService: productMediaService,
 		productService:      productService,
-		// TODO refactor
-		fileService:     resources.FileService{},
-		staticFilesPath: staticFilesPath,
+		fileService:         fileService,
+		staticFilesPath:     staticFilesPath,
 	}
 }
 
@@ -100,7 +99,7 @@ func (h *ProductMediaHandler) UploadImage(w http.ResponseWriter, r *http.Request
 	}
 	defer file.Close()
 
-	filePath, err := h.fileService.CreateFromWeb(file, header, h.staticFilesPath)
+	filePath, err := h.fileService.CreateImage(file, header, h.staticFilesPath)
 	if err != nil {
 		core.HandleError(w, r, err)
 		return
@@ -112,6 +111,7 @@ func (h *ProductMediaHandler) UploadImage(w http.ResponseWriter, r *http.Request
 	}
 	createdMedia, err := h.productMediaService.Create(ctx, productMedia)
 	if err != nil {
+		h.fileService.DeleteImage(productMedia.Link, h.staticFilesPath)
 		core.HandleError(w, r, err)
 		return
 	}
@@ -213,7 +213,7 @@ func (h *ProductMediaHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	// Удаляем файл с диска
 	if media.Link != "" {
-		h.fileService.Delete(media.Link, h.staticFilesPath)
+		h.fileService.DeleteImage(media.Link, h.staticFilesPath)
 	}
 
 	// Удаляем запись из БД

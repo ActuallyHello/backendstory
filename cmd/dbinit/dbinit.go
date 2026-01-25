@@ -2,32 +2,56 @@ package main
 
 import (
 	"context"
-	"log"
 	"log/slog"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/ActuallyHello/backendstory/pkg/backendstory/enum"
 	"github.com/ActuallyHello/backendstory/pkg/backendstory/enumvalue"
 	"github.com/ActuallyHello/backendstory/pkg/config"
 	"github.com/ActuallyHello/backendstory/pkg/container"
+	"github.com/ActuallyHello/backendstory/pkg/core"
+)
+
+const (
+	dbInitCommand = "DB_INIT_COMMAND"
 )
 
 func main() {
+	ctx, stop := signal.NotifyContext(
+		context.Background(),
+		os.Interrupt,
+		syscall.SIGTERM,
+	)
+	defer stop()
+
 	slog.Info("Loading dbinit application...")
 
 	config := config.MustLoadConfig(".")
 
 	slog.Info("Config was loaded...")
 
-	container := container.NewAppContainer(config)
+	container, err := container.NewAppContainer(ctx, config)
+	if err != nil {
+		slog.Error("Failed to init container...")
+		os.Exit(1)
+	}
+	defer container.Close()
 
 	slog.Info("Dependency container uploaded! DBinit ready to start!")
 
-	ctx := context.Background()
+	err = setupEnumValues(ctx, container)
+	if err != nil {
+		slog.Error("Setup values error", "error", err)
+	}
+	stop()
 
-	setupEnumValues(ctx, container)
+	<-ctx.Done()
+	slog.Info("Application stopped gracefully")
 }
 
-func setupEnumValues(ctx context.Context, container *container.AppContainer) {
+func setupEnumValues(ctx context.Context, container *container.AppContainer) error {
 	enumService := container.GetEnumService()
 	enumValueServicce := container.GetEnumValueService()
 
@@ -38,7 +62,7 @@ func setupEnumValues(ctx context.Context, container *container.AppContainer) {
 	}
 	product, err := enumService.Create(ctx, productStatus)
 	if err != nil {
-		log.Fatalf("Ошибка при установки статуса товара: %v", err)
+		return core.NewTechnicalError(err, dbInitCommand, "Ошибка при установки статуса товара")
 	}
 	for _, enumValue := range []enumvalue.EnumValue{
 		{
@@ -54,7 +78,7 @@ func setupEnumValues(ctx context.Context, container *container.AppContainer) {
 	} {
 		_, err := enumValueServicce.Create(ctx, enumValue)
 		if err != nil {
-			log.Fatalf("Ошибка при установки статуса товара: %v", err)
+			return core.NewTechnicalError(err, dbInitCommand, "Ошибка при установки статуса товара")
 		}
 	}
 
@@ -65,7 +89,7 @@ func setupEnumValues(ctx context.Context, container *container.AppContainer) {
 	}
 	order, err := enumService.Create(ctx, orderStatus)
 	if err != nil {
-		log.Fatalf("Ошибка при установки статуса заказа: %v", err)
+		return core.NewTechnicalError(err, dbInitCommand, "Ошибка при установки статуса заказа")
 	}
 	for _, enumValue := range []enumvalue.EnumValue{
 		{
@@ -86,7 +110,7 @@ func setupEnumValues(ctx context.Context, container *container.AppContainer) {
 	} {
 		_, err := enumValueServicce.Create(ctx, enumValue)
 		if err != nil {
-			log.Fatalf("Ошибка при установки статуса заказа: %v", err)
+			return core.NewTechnicalError(err, dbInitCommand, "Ошибка при установки статуса заказа")
 		}
 	}
 
@@ -97,7 +121,7 @@ func setupEnumValues(ctx context.Context, container *container.AppContainer) {
 	}
 	orderItem, err := enumService.Create(ctx, orderItemStatus)
 	if err != nil {
-		log.Fatalf("Ошибка при установки статуса элемента заказа: %v", err)
+		return core.NewTechnicalError(err, dbInitCommand, "Ошибка при установки статуса элемента заказа")
 	}
 	for _, enumValue := range []enumvalue.EnumValue{
 		{
@@ -118,7 +142,8 @@ func setupEnumValues(ctx context.Context, container *container.AppContainer) {
 	} {
 		_, err := enumValueServicce.Create(ctx, enumValue)
 		if err != nil {
-			log.Fatalf("Ошибка при установки статуса элемента заказа: %v", err)
+			return core.NewTechnicalError(err, dbInitCommand, "Ошибка при установки статуса элемента заказа")
 		}
 	}
+	return nil
 }

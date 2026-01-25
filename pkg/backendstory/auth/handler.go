@@ -68,7 +68,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		if deleteErr := h.authService.DeleteUser(ctx, req.Email); deleteErr != nil {
 			slog.Error("Couldn't compensate user!", "email", req.Email, "error", deleteErr)
 		} else {
-			slog.Info("User was compensated!", "email", req.Email)
+			slog.Info("User was removed!", "email", req.Email)
 		}
 		core.HandleError(w, r, err)
 		return

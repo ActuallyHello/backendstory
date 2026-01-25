@@ -3,7 +3,6 @@ package category
 import (
 	"context"
 	"errors"
-	"log/slog"
 
 	"github.com/ActuallyHello/backendstory/pkg/core"
 )
@@ -45,17 +44,14 @@ func (s *categoryService) Create(ctx context.Context, category Category) (Catego
 		return Category{}, err
 	}
 	if existing.ID > 0 {
-		slog.Error("Category already exists!", "error", err, "code", category.Code)
 		return Category{}, core.NewLogicalError(nil, categoryServiceCode, "Категория уже существует")
 	}
 
 	// Создаем запись
 	created, err := s.GetRepo().Create(ctx, category)
 	if err != nil {
-		slog.Error("Create category failed", "error", err, "code", category.Code)
 		return Category{}, core.NewTechnicalError(err, categoryServiceCode, "Ошибка при создании категории")
 	}
-	slog.Info("Category created", "code", created.Code)
 	return created, nil
 }
 
@@ -68,7 +64,6 @@ func (s *categoryService) Update(ctx context.Context, category Category) (Catego
 
 	updated, err := s.GetRepo().Update(ctx, existing)
 	if err != nil {
-		slog.Error("Update category failed", "error", err, "code", category.Code)
 		return Category{}, core.NewTechnicalError(err, categoryServiceCode, "Ошибка при обновлении категории")
 	}
 	return updated, nil
@@ -78,10 +73,8 @@ func (s *categoryService) Update(ctx context.Context, category Category) (Catego
 func (s *categoryService) Delete(ctx context.Context, category Category) error {
 	err := s.GetRepo().Delete(ctx, category)
 	if err != nil {
-		slog.Error("Failed to delete category", "error", err, "id", category.ID)
 		return core.NewTechnicalError(err, categoryServiceCode, "Ошибка при удалении категории")
 	}
-	slog.Info("Deleted category", "code", category.Code)
 	return nil
 }
 
@@ -89,7 +82,6 @@ func (s *categoryService) Delete(ctx context.Context, category Category) error {
 func (s *categoryService) GetByCode(ctx context.Context, code string) (Category, error) {
 	category, err := s.categoryRepo.FindByCode(ctx, code)
 	if err != nil {
-		slog.Error("Failed to find category by code", "error", err, "code", code)
 		if errors.Is(err, &core.NotFoundError{}) {
 			return Category{}, core.NewLogicalError(err, categoryServiceCode, err.Error())
 		}
@@ -102,7 +94,6 @@ func (s *categoryService) GetByCode(ctx context.Context, code string) (Category,
 func (s *categoryService) GetByCategoryID(ctx context.Context, categoryID uint) ([]Category, error) {
 	categories, err := s.categoryRepo.FindByCategoryID(ctx, categoryID)
 	if err != nil {
-		slog.Error("Failed to find category by code", "error", err, "categoryID", categoryID)
 		return nil, core.NewTechnicalError(err, categoryServiceCode, "Ошибка поиска категории по родителю")
 	}
 	return categories, nil

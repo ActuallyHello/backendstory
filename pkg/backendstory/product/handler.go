@@ -72,11 +72,6 @@ func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 		core.HandleError(w, r, core.NewLogicalError(err, productHandlerCode, err.Error()))
 		return
 	}
-	// check status
-	if _, err := h.enumValueService.GetByID(ctx, req.StatusID); err != nil {
-		core.HandleError(w, r, err)
-		return
-	}
 	// check category
 	if _, err := h.categoryService.GetByID(ctx, req.CategoryID); err != nil {
 		core.HandleError(w, r, err)
@@ -90,16 +85,21 @@ func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 		Price:      price,
 		Quantity:   req.Quantity,
 		CategoryID: req.CategoryID,
-		StatusID:   req.StatusID,
+		IsVisible:  req.IsVisible,
 	}
 	product, err = h.producterationService.Create(ctx, product)
 	if err != nil {
 		core.HandleError(w, r, err)
 		return
 	}
+	productStatus, err := h.enumValueService.GetByID(ctx, product.StatusID)
+	if err != nil {
+		core.HandleError(w, r, err)
+		return
+	}
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(ToProductDTO(product))
+	json.NewEncoder(w).Encode(ToProductDTO(product, enumvalue.ToEnumValueDTO(productStatus)))
 }
 
 // GetAll возвращает все продукты
@@ -126,7 +126,12 @@ func (h *ProductHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 
 	dtos := make([]ProductDTO, 0, len(products))
 	for _, product := range products {
-		dtos = append(dtos, ToProductDTO(product))
+		productStatus, err := h.enumValueService.GetByID(ctx, product.StatusID)
+		if err != nil {
+			core.HandleError(w, r, err)
+			return
+		}
+		dtos = append(dtos, ToProductDTO(product, enumvalue.ToEnumValueDTO(productStatus)))
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -168,9 +173,14 @@ func (h *ProductHandler) GetById(w http.ResponseWriter, r *http.Request) {
 		core.HandleError(w, r, err)
 		return
 	}
+	productStatus, err := h.enumValueService.GetByID(ctx, product.StatusID)
+	if err != nil {
+		core.HandleError(w, r, err)
+		return
+	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(ToProductDTO(product))
+	json.NewEncoder(w).Encode(ToProductDTO(product, enumvalue.ToEnumValueDTO(productStatus)))
 }
 
 // GetByCode возвращает продукт по коду
@@ -203,9 +213,14 @@ func (h *ProductHandler) GetByCode(w http.ResponseWriter, r *http.Request) {
 		core.HandleError(w, r, err)
 		return
 	}
+	productStatus, err := h.enumValueService.GetByID(ctx, product.StatusID)
+	if err != nil {
+		core.HandleError(w, r, err)
+		return
+	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(ToProductDTO(product))
+	json.NewEncoder(w).Encode(ToProductDTO(product, enumvalue.ToEnumValueDTO(productStatus)))
 }
 
 // GetWithSearchCriteria выполняет поиск продуктов по критериям
@@ -245,7 +260,12 @@ func (h *ProductHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Re
 
 	dtos := make([]ProductDTO, 0, len(products))
 	for _, product := range products {
-		dtos = append(dtos, ToProductDTO(product))
+		productStatus, err := h.enumValueService.GetByID(ctx, product.StatusID)
+		if err != nil {
+			core.HandleError(w, r, err)
+			return
+		}
+		dtos = append(dtos, ToProductDTO(product, enumvalue.ToEnumValueDTO(productStatus)))
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -260,6 +280,7 @@ func (h *ProductHandler) GetWithSearchCriteria(w http.ResponseWriter, r *http.Re
 // @Produce json
 // @Security BearerAuth
 // @Param id path int true "ID продукта"
+// @Param soft query boolean false "Флаг мягкого удаления (true/false)" default(true)
 // @Success 204 "Успешно удалено"
 // @Failure 400 {object} core.ErrorResponse "Неверный ID"
 // @Failure 401 {object} core.ErrorResponse "Не авторизован"
@@ -282,12 +303,24 @@ func (h *ProductHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Получаем параметр soft из query string
+	softDelete := true
+	softParam := r.URL.Query().Get("soft")
+	if softParam != "" {
+		soft, err := strconv.ParseBool(softParam)
+		if err != nil {
+			core.HandleError(w, r, core.NewLogicalError(err, productHandlerCode, "Невалидный признак удаления!"+err.Error()))
+			return
+		}
+		softDelete = soft
+	}
+
 	product, err := h.producterationService.GetByID(ctx, uint(id))
 	if err != nil {
 		core.HandleError(w, r, err)
 		return
 	}
-	err = h.producterationService.Delete(ctx, product)
+	err = h.producterationService.Delete(ctx, product, softDelete)
 	if err != nil {
 		core.HandleError(w, r, err)
 		return
@@ -334,9 +367,133 @@ func (h *ProductHandler) GetByCategoryID(w http.ResponseWriter, r *http.Request)
 
 	dtos := make([]ProductDTO, 0, len(products))
 	for _, product := range products {
-		dtos = append(dtos, ToProductDTO(product))
+		productStatus, err := h.enumValueService.GetByID(ctx, product.StatusID)
+		if err != nil {
+			core.HandleError(w, r, err)
+			return
+		}
+		dtos = append(dtos, ToProductDTO(product, enumvalue.ToEnumValueDTO(productStatus)))
 	}
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(dtos)
+}
+
+// ChangeStatus изменяет статус продукта
+// @Summary Изменить статус продукта
+// @Description Изменяет статус продукта на указанный код статуса
+// @Tags Products
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body ProductStatusChangeRequest true "Запрос на изменение статуса"
+// @Success 200 {object} ProductDTO "Продукт с обновленным статусом"
+// @Failure 400 {object} core.ErrorResponse "Неверный запрос"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} core.ErrorResponse "Продукт или статус не найден"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /products/change-status [post]
+// @Id changeProductStatus
+func (h *ProductHandler) ChangeStatus(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var req ProductStatusChangeRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		core.HandleError(w, r, core.NewTechnicalError(err, productHandlerCode, err.Error()))
+		return
+	}
+	if err := h.validate.Struct(req); err != nil {
+		details := core.CollectValidationDetails(err)
+		core.HandleValidationError(w, r, core.NewLogicalError(err, productHandlerCode, err.Error()), details)
+		return
+	}
+
+	product, err := h.producterationService.GetByID(ctx, uint(req.ID))
+	if err != nil {
+		core.HandleError(w, r, err)
+		return
+	}
+
+	status, err := h.enumValueService.GetByCodeAndEnumCode(ctx, req.StatusCode, ProductStatus)
+	if err != nil {
+		core.HandleError(w, r, err)
+		return
+	}
+
+	product.StatusID = status.ID
+	product, err = h.producterationService.Update(ctx, product)
+	if err != nil {
+		core.HandleError(w, r, err)
+		return
+	}
+
+	productStatus, err := h.enumValueService.GetByID(ctx, product.StatusID)
+	if err != nil {
+		core.HandleError(w, r, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(ToProductDTO(product, enumvalue.ToEnumValueDTO(productStatus)))
+}
+
+// ChangePrice изменяет цену продукта
+// @Summary Изменить цену продукта
+// @Description Изменяет цену продукта на указанное значение
+// @Tags Products
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body ProductPriceChangeRequest true "Запрос на изменение цены"
+// @Success 200 {object} ProductDTO "Продукт с обновленной ценой"
+// @Failure 400 {object} core.ErrorResponse "Неверный запрос или цена"
+// @Failure 401 {object} core.ErrorResponse "Не авторизован"
+// @Failure 403 {object} core.ErrorResponse "Доступ запрещен"
+// @Failure 404 {object} core.ErrorResponse "Продукт не найден"
+// @Failure 500 {object} core.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /products/change-price [post]
+// @Id changeProductPrice
+func (h *ProductHandler) ChangePrice(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var req ProductPriceChangeRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		core.HandleError(w, r, core.NewTechnicalError(err, productHandlerCode, err.Error()))
+		return
+	}
+	if err := h.validate.Struct(req); err != nil {
+		details := core.CollectValidationDetails(err)
+		core.HandleValidationError(w, r, core.NewLogicalError(err, productHandlerCode, err.Error()), details)
+		return
+	}
+
+	// check price
+	price, err := decimal.NewFromString(req.Price)
+	if err != nil {
+		core.HandleError(w, r, core.NewLogicalError(err, productHandlerCode, err.Error()))
+		return
+	}
+
+	product, err := h.producterationService.GetByID(ctx, uint(req.ID))
+	if err != nil {
+		core.HandleError(w, r, err)
+		return
+	}
+
+	product.Price = price
+	product, err = h.producterationService.Update(ctx, product)
+	if err != nil {
+		core.HandleError(w, r, err)
+		return
+	}
+
+	productStatus, err := h.enumValueService.GetByID(ctx, product.StatusID)
+	if err != nil {
+		core.HandleError(w, r, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(ToProductDTO(product, enumvalue.ToEnumValueDTO(productStatus)))
 }
